@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 
 <html lang="ko">
@@ -95,11 +96,11 @@
 
         }
 
-        .sig-red { background-color: #dc3545; animation: blink 1s infinite alternate; }   /* 마이크 잠김 */
+        .sig-red { background-color: #dc3545; animation: blink 1s infinite alternate; }  
 
-        .sig-yellow { background-color: #ffc107; } /* 대답 중 / 잠자는 중 */
+        .sig-yellow { background-color: #ffc107; }
 
-        .sig-green { background-color: #28a745; animation: pulse-green 1.2s infinite; } /* 듣는 중 */
+        .sig-green { background-color: #28a745; animation: pulse-green 1.2s infinite; }
 
 
  
@@ -321,7 +322,7 @@
 
  
 
-    <!-- 상단 타이틀바 (똘똘한 복실이) -->
+    <!-- 상단 타이틀바 -->
 
     <header class="app-header text-center position-relative">
 
@@ -351,11 +352,11 @@
 
     <main class="container" id="main-content">
 
-        <!-- 초대형 대화창 -->
+        <!-- 초대형 대화창 (요청하신 직관적인 멘트로 변경 완료 ⭐) -->
 
         <div class="status-box text-center">
 
-            <span class="status-text text-success" id="status-display">아래 복실이를 눌러주세요</span>
+            <span class="status-text text-success" id="status-display">복실아 라고 불러주거나 아래 복실이를 눌러주세요</span>
 
         </div>
 
@@ -406,59 +407,144 @@
 
  
 
-    <!-- ⚙️ 보호자 설정 및 AI Key 등록 모달창 -->
+    <!-- ⚙️ 보호자 설정 및 가문 주소록 등록 모달창 -->
 
     <div id="settingsModal">
 
         <div class="card p-4 mx-3 shadow traditional-card" style="width: 100%; max-width: 420px; background: white; border-radius: 20px; max-height: 90vh; overflow-y: auto;">
 
-            <h4 class="fw-bold text-center border-bottom pb-2 mb-3">⚙️ 보호자 설정 및 AI 등록</h4>
-
-            <p class="text-muted small">복실이의 기능과 AI 두뇌를 연결하기 위해 필수값을 입력해 주세요.</p>
+            <h4 class="fw-bold text-center border-bottom pb-2 mb-3">⚙️ 초기 환경 설정</h4>
 
            
+
+            <!-- 1. 어르신 호칭 및 목소리 성별 선택 -->
+
+            <div class="mb-3 border-bottom pb-3">
+
+                <h6 class="fw-bold text-primary"><i class="bi bi-person-badge-fill"></i> 1. 맞춤형 호칭 및 음성 설정</h6>
+
+                <div class="row g-2 mt-2">
+
+                    <div class="col-6">
+
+                        <label class="form-label small fw-bold">상대방 호칭</label>
+
+                        <select class="form-select form-select-sm" id="user-title">
+
+                            <option value="할아버지" selected>할아버지 👴</option>
+
+                            <option value="할머니">할머니 👵</option>
+
+                            <option value="아저씨">아저씨 👨</option>
+
+                            <option value="아주머니">아주머니 👩</option>
+
+                            <option value="형님">형님 👨</option>
+
+                            <option value="누님">누님 👩</option>
+
+                            <option value="언니">언니 👧</option>
+
+                            <option value="오빠">오빠 👦</option>
+
+                            <option value="누나">누나 👩</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-6">
+
+                        <label class="form-label small fw-bold">복실이 목소리</label>
+
+                        <select class="form-select form-select-sm" id="voice-gender">
+
+                            <option value="granddaughter" selected>상냥한 여성 (손녀)</option>
+
+                            <option value="grandson">상냥한 남성 (손자)</option>
+
+                            <option value="woman30">30대 상냥한 여자</option>
+
+                            <option value="man30">30대 상냥한 남자</option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+ 
+
+            <!-- 2. 가문 전용 무제한 전화번호부 -->
+
+            <div class="mb-3 border-bottom pb-3">
+
+                <h6 class="fw-bold text-success"><i class="bi bi-telephone-fill"></i> 2. 복실이 전용 전화번호부</h6>
+
+                <p class="text-muted" style="font-size:0.65rem; line-height:1.4;">"아들한테 전화해줘", "이웃집 전화해줘" 라고 말할 때 연결될 연락처들을 적어주세요.</p>
+
+                <div id="contact-list-container" class="mb-2" style="max-height: 120px; overflow-y: auto;">
+
+                    <!-- 저장된 연락처 동적 노출 -->
+
+                </div>
+
+                <div class="row g-1">
+
+                    <div class="col-4">
+
+                        <input type="text" class="form-control form-control-sm" id="new-contact-name" placeholder="호칭(예: 아들)">
+
+                    </div>
+
+                    <div class="col-6">
+
+                        <input type="tel" class="form-control form-control-sm" id="new-contact-phone" placeholder="전화번호(- 제외)">
+
+                    </div>
+
+                    <div class="col-2">
+
+                        <button class="btn btn-sm btn-success w-100" onclick="addNewContact()">등록</button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+           
+
+            <!-- 3. AI 클라우드 키 설정 -->
 
             <div class="mb-3">
 
-                <label class="form-label small fw-bold text-success">아들 전화번호</label>
+                <h6 class="fw-bold text-secondary"><i class="bi bi-cpu-fill"></i> 3. 인공지능(AI) 구름 비서 키</h6>
 
-                <input type="tel" class="form-control form-control-sm" id="phone-son" placeholder="예: 01012345678">
+                <div class="mb-2">
 
-            </div>
+                    <label class="form-label small fw-bold" style="font-size:0.7rem;">구글 제미나이 키 (평생 무료)</label>
 
-            <div class="mb-3">
+                    <input type="password" class="form-control form-control-sm" id="key-gemini" placeholder="AI Studio Key 입력">
 
-                <label class="form-label small fw-bold text-success">딸 전화번호</label>
+                </div>
 
-                <input type="tel" class="form-control form-control-sm" id="phone-daughter" placeholder="예: 01098765432">
+                <div>
 
-            </div>
+                    <label class="form-label small fw-bold" style="font-size:0.7rem;">OpenAI 챗GPT 키</label>
 
-           
+                    <input type="password" class="form-control form-control-sm" id="key-chatgpt" placeholder="sk-... 입력">
 
-            <hr class="my-2">
-
-           
-
-            <div class="mb-3">
-
-                <label class="form-label small fw-bold text-primary">1순위: 구글 제미나이 API 키 (평생 무료)</label>
-
-                <input type="password" class="form-control form-control-sm" id="key-gemini" placeholder="AI Studio에서 발급받은 AIzaSy... 입력">
-
-            </div>
-
-            <div class="mb-4">
-
-                <label class="form-label small fw-bold text-primary">2순위: OpenAI 챗GPT API 키</label>
-
-                <input type="password" class="form-control form-control-sm" id="key-chatgpt" placeholder="OpenAI에서 발급받은 sk-... 입력">
+                </div>
 
             </div>
 
            
 
-            <div class="row g-2">
+            <div class="row g-2 mt-2">
 
                 <div class="col-6">
 
@@ -509,11 +595,26 @@
 
  
 
+        // 가로채기 메아리 판독용 전역 변수
+
+        window.currentAiText = "";
+
+
+ 
+
         let configData = {
 
-            son: "",
+            userTitle: "할아버지",
 
-            daughter: "",
+            voiceGender: "granddaughter",
+
+            contacts: [
+
+                { name: "아들", phone: "" },
+
+                { name: "딸", phone: "" }
+
+            ],
 
             geminiKey: "",
 
@@ -524,7 +625,7 @@
 
  
 
-        const SYSTEM_PROMPT = "너의 이름은 '복실이'이고, 혼자 살아가시는 어르신들을 정성껏 돌보는 인공지능 강아지 비서야. 어르신들의 말동무가 되어드려야 해. 어르신들이 이해하기 쉽도록 매우 친절하고, 따뜻하며, 공손한 한글 존댓말로 대답해줘. 의학적 판단이 필요할 때는 상냥하게 자가 대처법을 권하되, 가슴이 아프거나 답답하다는 초긴급 징후에는 즉시 119를 불러야 한다고 상냥하지만 아주 강력하게 경고해야해. 문장은 길지 않게 두세 줄 이내로 짧게 끊어서 말해줘.";
+        let SYSTEM_PROMPT = "";
 
 
  
@@ -533,44 +634,13 @@
 
             loadSettings();
 
-           
-
-            // 🚨 [신규] 카카오톡 내부 브라우저 감지 경고 장치 ⭐
-
-            const isKakaoTalk = /KAKAOTALK/i.test(navigator.userAgent);
-
-            if (isKakaoTalk) {
-
-                updateSignal('red', '카카오톡에서는 마이크가 잠겨 작동하지 않습니다!');
-
-                document.getElementById('status-display').innerHTML = `
-
-                    <div class="text-danger fw-bold" style="font-size:1.35rem; line-height:1.5;">
-
-                        ⚠️ 카카오톡 안에서는 마이크가 안 됩니다!<br><br>
-
-                        <span class="text-dark" style="font-size:1.15rem;">
-
-                            오른쪽 아래 <strong class="text-primary">[점 3개(메뉴)]</strong> 또는 <strong class="text-primary">[지구본]</strong>을 누르고
-
-                            <strong class="text-success">[다른 브라우저로 열기]</strong>를 꼭 눌러주세요!
-
-                        </span>
-
-                    </div>`;
-
-                // 카톡에서는 마이크 엔진 초기화를 건너뛰어 에러 크래시를 원천 방지합니다.
-
-                return;
-
-            }
-
-
- 
-
             initVoiceEngine();
 
-            updateSignal('yellow', '복실이가 조는 중... 복실이를 한번 터치해 주세요!');
+            setTimeout(() => {
+
+                speak(`${configData.userTitle}님 안녕하십니까! 똘똘한 강아지 비서 복실이 대령했습니다. 몸이 불편하시거나 심심하실 때 언제든 복실아 하고 편하게 불러주세요.`);
+
+            }, 800);
 
         };
 
@@ -581,11 +651,28 @@
 
             try {
 
-                const saved = localStorage.getItem("boksiri_config");
+                const saved = localStorage.getItem("boksiri_config_v2");
 
-                if (saved) configData = JSON.parse(saved);
+                if (saved) {
+
+                    configData = JSON.parse(saved);
+
+                }
 
             } catch(e) {}
+
+            buildSystemPrompt();
+
+            renderSettingsContacts();
+
+        }
+
+
+ 
+
+        function buildSystemPrompt() {
+
+            SYSTEM_PROMPT = `너의 이름은 '복실이'이고, 혼자 살아가시는 어르신을 정성껏 돌보는 인공지능 강아지 비서야. 대화 상대방의 호칭은 오직 '${configData.userTitle}' 또는 '${configData.userTitle}님'이야. 대답을 할 때는 무조건 문장 마디마디마다 '${configData.userTitle}님' 또는 '${configData.userTitle}'이라고 다정하게 불러주어야 해. 다른 호칭은 절대 쓰면 안 돼. 어르신이 이해하기 쉽도록 친절하고 공손한 한국어 존댓말로 대답해줘. 의학적 판단이 필요할 때는 상냥하게 자가 대처법을 권하되, 가슴이 아프거나 답답하다는 초긴급 징후에는 즉시 119를 불러야 한다고 상냥하지만 아주 강력하게 경고해야해. 문장은 길지 않게 두세 줄 이내로 짧게 끊어서 말해줘.`;
 
         }
 
@@ -594,9 +681,9 @@
 
         function saveSettings() {
 
-            configData.son = document.getElementById('phone-son').value;
+            configData.userTitle = document.getElementById('user-title').value;
 
-            configData.daughter = document.getElementById('phone-daughter').value;
+            configData.voiceGender = document.getElementById('voice-gender').value;
 
             configData.geminiKey = document.getElementById('key-gemini').value;
 
@@ -604,13 +691,15 @@
 
             try {
 
-                localStorage.setItem("boksiri_config", JSON.stringify(configData));
+                localStorage.setItem("boksiri_config_v2", JSON.stringify(configData));
 
             } catch(e) {}
 
+            buildSystemPrompt();
+
             closeSettings();
 
-            alert("보호자 번호 및 인공지능 API 키가 정상 등록되었습니다!");
+            alert("모든 설정이 완벽하게 저장되었습니다!");
 
             resetToIdleState();
 
@@ -621,13 +710,15 @@
 
         function openSettings() {
 
-            document.getElementById('phone-son').value = configData.son || "";
+            document.getElementById('user-title').value = configData.userTitle || "할아버지";
 
-            document.getElementById('phone-daughter').value = configData.daughter || "";
+            document.getElementById('voice-gender').value = configData.voiceGender || "granddaughter";
 
             document.getElementById('key-gemini').value = configData.geminiKey || "";
 
             document.getElementById('key-chatgpt').value = configData.chatgptKey || "";
+
+            renderSettingsContacts();
 
             document.getElementById('settingsModal').style.display = 'flex';
 
@@ -642,22 +733,87 @@
 
  
 
-        function speak(text) {
+        function renderSettingsContacts() {
 
-            updateSignal('yellow', '복실이가 대답하는 중... (마이크 잠시 대기)');
+            const container = document.getElementById('contact-list-container');
 
-           
+            container.innerHTML = '';
 
-            if (inactivityTimer) clearTimeout(inactivityTimer);
+            configData.contacts.forEach((c, index) => {
+
+                const div = document.createElement('div');
+
+                div.className = 'd-flex justify-content-between align-items-center mb-1 bg-light p-1 rounded';
+
+                div.innerHTML = `
+
+                    <span class="small fw-bold">👤 ${c.name} : ${c.phone || "미등록"}</span>
+
+                    <button class="btn btn-sm btn-danger py-0 px-1" style="font-size:0.65rem;" onclick="deleteContact(${index})">삭제</button>
+
+                `;
+
+                container.appendChild(div);
+
+            });
+
+        }
 
 
  
 
-            if (recognition) {
+        function addNewContact() {
 
-                try { recognition.stop(); } catch(e) {}
+            const name = document.getElementById('new-contact-name').value.trim();
+
+            const phone = document.getElementById('new-contact-phone').value.trim();
+
+            if (!name || !phone) {
+
+                alert("이름과 번호를 정확히 입력해 주세요.");
+
+                return;
 
             }
+
+            configData.contacts.push({ name, phone });
+
+            document.getElementById('new-contact-name').value = '';
+
+            document.getElementById('new-contact-phone').value = '';
+
+            renderSettingsContacts();
+
+        }
+
+
+ 
+
+        function deleteContact(index) {
+
+            configData.contacts.splice(index, 1);
+
+            renderSettingsContacts();
+
+        }
+
+
+ 
+
+        // --- 🗣️ 상냥한 여성 / 듬직한 남성 목소리 전환 합성 시스템 ---
+
+        function speak(text) {
+
+            updateSignal('yellow', '복실이가 대답하는 중... (마이크 상시 대기)');
+
+           
+
+            window.currentAiText = text;
+
+
+ 
+
+            if (inactivityTimer) clearTimeout(inactivityTimer);
 
 
  
@@ -682,7 +838,7 @@
 
  
 
-            let safeText = text.replace(/어르신/g, "어르 신");
+            let safeText = text.replace(/어르신/g, configData.userTitle);
 
             const utterance = new SpeechSynthesisUtterance(safeText);
 
@@ -692,9 +848,47 @@
 
             const voices = window.speechSynthesis.getVoices();
 
-            let selectedVoice = voices.find(v => v.lang === 'ko-KR' && (v.name.includes('Google') || v.name.includes('Yuna') || v.name.includes('Heami') || v.name.includes('Arami') || v.name.includes('Seoyeon')));
+            let selectedVoice = null;
 
-           
+
+ 
+
+            if (configData.voiceGender === 'granddaughter') {
+
+                selectedVoice = voices.find(v => v.lang === 'ko-KR' && (v.name.includes('Google') || v.name.includes('Yuna') || v.name.includes('Arami') || v.name.includes('Seoyeon')));
+
+                utterance.pitch = 1.25;
+
+                utterance.rate = 0.95; 
+
+            } else if (configData.voiceGender === 'grandson') {
+
+                selectedVoice = voices.find(v => v.lang === 'ko-KR' && (v.name.includes('Minjun') || v.name.includes('male')));
+
+                utterance.pitch = 1.05;
+
+                utterance.rate = 0.90; 
+
+            } else if (configData.voiceGender === 'woman30') {
+
+                selectedVoice = voices.find(v => v.lang === 'ko-KR' && (v.name.includes('Heami') || v.name.includes('Google') || v.name.includes('Yuna')));
+
+                utterance.pitch = 1.00;
+
+                utterance.rate = 0.95; 
+
+            } else if (configData.voiceGender === 'man30') {
+
+                selectedVoice = voices.find(v => v.lang === 'ko-KR' && (v.name.includes('Minjun') || v.name.includes('male') || v.name.includes('남성')));
+
+                utterance.pitch = 0.85;
+
+                utterance.rate = 0.92; 
+
+            }
+
+
+ 
 
             if (!selectedVoice) {
 
@@ -707,13 +901,6 @@
                 utterance.voice = selectedVoice;
 
             }
-
-
- 
-
-            utterance.rate = 0.95; 
-
-            utterance.pitch = 1.15;
 
 
  
@@ -785,8 +972,6 @@
  
 
         function restartMicSafely() {
-
-            // 카카오톡 내부 브라우저인 경우 마이크 작동 시도 차단
 
             if (/KAKAOTALK/i.test(navigator.userAgent)) return;
 
@@ -954,7 +1139,7 @@
 
  
 
-                if (speechToText.includes("꺼라") || speechToText.includes("그만") || speechToText.includes("시끄럽") || speechToText.includes("조용")) {
+                if (speechToText.includes("꺼라") || speechToText.includes("그만") || speechToText.includes("시끄럽") || speechToText.includes("조용") || speechToText.includes("멈춰") || speechToText.includes("닥쳐")) {
 
                     closeTheater();
 
@@ -970,6 +1155,47 @@
                     handleCallConfirmation(speechToText);
 
                     return;
+
+                }
+
+
+ 
+
+                // 복실이가 말을 떠들고 있는 중에 가로채기(Voice Barge-In) 작동
+
+                if (window.speechSynthesis.speaking) {
+
+                    const aiSentence = window.currentAiText || "";
+
+                    let isSelfEcho = false;
+
+
+ 
+
+                    if (aiSentence.includes(speechToText) || speechToText.split(" ").every(word => aiSentence.includes(word))) {
+
+                        isSelfEcho = true;
+
+                    }
+
+
+ 
+
+                    if (isSelfEcho) {
+
+                        console.log("🤖 복실이 자체 메아리 필터링 통과");
+
+                        return;
+
+                    } else {
+
+                        window.speechSynthesis.cancel();
+
+                        if (speakTimer) clearTimeout(speakTimer);
+
+                        console.log("🗣️ [음성 가로채기 성공] 복실이 침묵 모드 전환!");
+
+                    }
 
                 }
 
@@ -1022,8 +1248,6 @@
  
 
         window.toggleBoksiri = function() {
-
-            // 카톡 내부 브라우저인 경우 가동 자체 차단
 
             if (/KAKAOTALK/i.test(navigator.userAgent)) {
 
@@ -1082,6 +1306,8 @@
 
  
 
+        // 🚨 [대문 문구 롤백 패치 ⭐] 리셋 시 "복실아 라고 불러주거나 아래 복실이를 눌러주세요"로 동적 원복
+
         function resetToIdleState() {
 
             isActiveState = false;
@@ -1103,7 +1329,7 @@
 
  
 
-            document.getElementById('status-display').innerText = '아래 복실이를 눌러주세요';
+            document.getElementById('status-display').innerText = '복실아 라고 불러주거나 아래 복실이를 눌러주세요';
 
             document.getElementById('status-display').className = "status-text text-success";
 
@@ -1133,8 +1359,6 @@
 
         function playVideoAutomatically(searchQuery) {
 
-            if (inactivityTimer) clearTimeout(inactivityTimer);
-
             document.getElementById('playing-title').innerText = `📺 ${searchQuery} 재생 중`;
 
            
@@ -1145,7 +1369,9 @@
 
             
 
-            const youtubeEmbedUrl = `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(searchQuery)}&autoplay=1&mute=0`;
+            const bypassQuery = `${searchQuery} 가사`;
+
+            const youtubeEmbedUrl = `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(bypassQuery)}&autoplay=1&mute=0`;
 
             document.getElementById('youtube-iframe').src = youtubeEmbedUrl;
 
@@ -1206,7 +1432,7 @@
 
             document.getElementById('status-display').innerText = "🛰️ 위성 안테나를 켜고 어르신의 동네 날씨를 찾고 있습니다...";
 
-            speak("어르신이 지금 계신 곳의 진짜 날씨를 위성으로 알아보고 있어요. 삼초만 기다려주세요!");
+            speak(`${configData.userTitle}님이 지금 계신 곳의 진짜 날씨를 위성으로 알아보고 있어요. 삼초만 기다려주세요!`);
 
 
  
@@ -1257,7 +1483,7 @@
 
  
 
-                    const weatherReport = `어르신! 지금 계신 동네의 오늘 날씨는 ${currentWeatherText}이고, 기온은 영상 ${currentTemp}도입니다. 그리고 내일은 아침 최저 ${tomorrowMin}도, 낮 최고 ${tomorrowMax}도로 하루 종일 ${tomorrowWeatherText}가 예상됩니다. 옷 따뜻하게 입으시고 감기 조심하세요!`;
+                    const weatherReport = `${configData.userTitle}님! 지금 계신 동네의 오늘 날씨는 ${currentWeatherText}이고, 기온은 영상 ${currentTemp}도입니다. 그리고 내일은 아침 최저 ${tomorrowMin}도, 낮 최고 ${tomorrowMax}도로 하루 종일 ${tomorrowWeatherText}가 예상됩니다. 감기 조심하세요!`;
 
 
  
@@ -1286,6 +1512,87 @@
                 resetToIdleState();
 
             }, { timeout: 10000 });
+
+        }
+
+
+ 
+
+        function launchKakaoTaxi() {
+
+            updateSignal('yellow', '어르신 위치 위성 확인 중...');
+
+            document.getElementById('status-display').innerText = "🛰️ 위성으로 어르신이 계신 위치를 파악하고 있습니다...";
+
+            speak(`${configData.userTitle}님이 계신 곳으로 택시를 부를 수 있게, 위성으로 현 위치를 찾고 있어요. 잠시만요!`);
+
+
+ 
+
+            if (!navigator.geolocation) {
+
+                speak("스마트폰의 위치 센서가 꺼져 있어 위치 파악이 어렵습니다. 일단 카카오택시 앱을 바로 열어드릴게요.");
+
+                setTimeout(() => { window.location.href = "kakaot://"; }, 3000);
+
+                resetToIdleState();
+
+                return;
+
+            }
+
+
+ 
+
+            navigator.geolocation.getCurrentPosition((position) => {
+
+                const lat = position.coords.latitude;
+
+                const lon = position.coords.longitude;
+
+                console.log(`택시용 GPS 좌표 획득: 위도 ${lat}, 경도 ${lon}`);
+
+
+ 
+
+                speak(`${configData.userTitle}님이 계신 현재 위치를 확인했습니다! 지금 즉시 카카오 택시를 호출합니다. 화면이 열리면 호출 단추만 꾹 누르세요!`);
+
+
+ 
+
+                setTimeout(() => {
+
+                    const kakaoTaxiAppUrl = `kakaot://taxi?start_lat=${lat}&start_lng=${lon}&start_name=${encodeURIComponent('어르신 현재 위치')}`;
+
+                    window.location.href = kakaoTaxiAppUrl;
+
+
+ 
+
+                    setTimeout(() => {
+
+                        if (!document.hidden) {
+
+                            window.location.href = "https://t.kakao.com";
+
+                        }
+
+                    }, 2000);
+
+                }, 4000);
+
+
+ 
+
+            }, (error) => {
+
+                speak("위치 수집이 거부되었습니다. 카카오택시 앱을 바로 열어드릴게요.");
+
+                setTimeout(() => { window.location.href = "kakaot://"; }, 2500);
+
+                resetToIdleState();
+
+            });
 
         }
 
@@ -1442,31 +1749,31 @@
 
             else if (command.includes("외롭") || command.includes("쓸쓸") || command.includes("혼자")) {
 
-                return "어르신, 외로워하지 마세요. 애교쟁이 복실이가 늘 어르신 곁에서 지켜드릴게요. 제가 어르신 정말 많이 사랑합니다!";
+                return `${configData.userTitle}님, 외로워하지 마세요. 애교쟁이 복실이가 늘 어르신 곁에서 지켜드릴게요. 제가 진짜 많이 사랑합니다!`;
 
             }
 
             else if (command.includes("머리") || command.includes("두통") || command.includes("어지러")) {
 
-                return "아이고 머리가 아프시군요 어르신. 따뜻한 물 한잔 천천히 드시고 침대나 이불에 누워 가만히 안정을 취해 보세요. 혈압약 드실 시간이 지났는지도 꼭 확인해 보세요.";
+                return `아이고 머리가 아프시군요 ${configData.userTitle}님. 따뜻한 물 한잔 천천히 드시고 가만히 안정을 취해 보세요. 혈압약 드실 시간이 지났는지도 꼭 확인해 보세요.`;
 
             }
 
             else if (command.includes("가슴") || command.includes("답답") || command.includes("숨") || command.includes("찌릿")) {
 
-                return "어르신! 가슴이 찌릿찌릿 아프거나 답답하고 숨쉬기 힘드신 건 아주 위험한 신호입니다! 즉시 119를 부르시거나 아드님 따님께 빨리 알리셔야 합니다!";
+                return `경고합니다 ${configData.userTitle}님! 가슴이 답답하고 숨쉬기 힘드신 건 아주 위험한 신호입니다! 즉시 119를 부르시거나 주위 분들에게 알리셔야 합니다!`;
 
             }
 
             else if (command.includes("배가") || command.includes("복통") || command.includes("체했") || command.includes("소화")) {
 
-                return "배가 아프시군요. 배를 따뜻하게 덮으시고 손을 따뜻하게 비벼서 명치 아래부터 아랫배까지 시계 방향으로 둥글게 살살 문질러 주시면 편해지실 겁니다.";
+                return "배가 아프시군요. 배를 따뜻하게 덮으시고 아랫배까지 시계 방향으로 둥글게 살살 문질러 주시면 편해지실 겁니다.";
 
             }
 
             else {
 
-                return "죄송해요 어르신, 인터넷 구름 서버가 연결되지 않아서 제가 정확한 대답을 찾지 못했어요. 무릎 아프다, 노래 틀어줘 처럼 저에게 간단하게 다시 한번 말씀해 주세요.";
+                return `죄송해요 ${configData.userTitle}님, 인터넷 구름 서버가 연결되지 않아서 제가 정확한 대답을 찾지 못했어요. 날씨 어때, 노래 틀어줘 처럼 저에게 간단하게 다시 한번 말씀해 주세요.`;
 
             }
 
@@ -1530,7 +1837,7 @@
 
             } else {
 
-                speak("잘 못 알아들었어요 어르신. 전화를 걸까요? 맞으면 '어 그래', 아니면 '하지마라' 라고 말씀해 주세요.");
+                speak("잘 못 알아들었어요. 전화를 걸까요? 맞으면 '어 그래', 아니면 '하지마라' 라고 말씀해 주세요.");
 
             }
 
@@ -1548,9 +1855,7 @@
 
  
 
-            // 1. 노래 끄기 음성 명령 대응 (상시 최우선 감지)
-
-            if (command.includes("꺼") || command.includes("정지") || command.includes("중단") || command.includes("그만") || command.includes("시끄럽") || command.includes("조용")) {
+            if (command.includes("꺼") || command.includes("정지") || command.includes("중단") || command.includes("그만") || command.includes("시끄럽") || command.includes("조용") || command.includes("멈춰") || command.includes("닥쳐")) {
 
                 closeTheater();
 
@@ -1560,8 +1865,6 @@
 
 
  
-
-            // [긴급 전화 연동] 경찰서 112 / 소방서 119 다이얼 직결 승인 시스템
 
             if (command.includes("경찰") || command.includes("일일이") || command.includes("112") || command.includes("강도") || command.includes("도둑")) {
 
@@ -1582,8 +1885,6 @@
 
  
 
-            // [실시간 기상청 위성 날씨 구동 조건문]
-
             if (command.includes("날씨") || command.includes("비오냐") || command.includes("비가") || command.includes("눈오냐") || command.includes("눈이") || command.includes("덥냐") || command.includes("춥냐") || command.includes("기온")) {
 
                 fetchLocationAndWeather();
@@ -1595,7 +1896,16 @@
 
  
 
-            // 2. 노래 틀기 명령 (가수/제목 자동 추출)
+            if (command.includes("택시") || command.includes("타다") || command.includes("카카오택시") || command.includes("차 불러")) {
+
+                launchKakaoTaxi();
+
+                return;
+
+            }
+
+
+ 
 
             if (command.includes("노래") || command.includes("음악") || command.includes("트로트") || command.includes("틀어") || command.includes("들려")) {
 
@@ -1629,7 +1939,7 @@
 
  
 
-                speak(`네 어르신! 요청하신 ${searchWord}를 찾아서 즉시 틀어드릴게요! 편안히 감상하세요.`);
+                speak(`네! 요청하신 ${searchWord}를 찾아서 즉시 틀어드릴게요! 편안히 감상하세요.`);
 
                 setTimeout(() => { playVideoAutomatically(searchWord); }, 4000);
 
@@ -1640,45 +1950,25 @@
 
  
 
-            // 3. 자녀에게 전화 걸기 승인 프로세스 연동
+            // [가문 전용 전화번호부 음성 검색 및 승인 엔진]
 
-            if (command.includes("전화") || command.includes("아들") || command.includes("딸")) {
+            let foundContact = null;
 
-                if (command.includes("아들")) {
+            for (let c of configData.contacts) {
 
-                    if (configData.son) {
+                if (c.phone && command.includes(c.name)) {
 
-                        triggerCallConfirmation("아들", configData.son);
+                    foundContact = c;
 
-                    } else {
-
-                        speak("아직 아드님 번호가 등록되지 않았습니다. 설정 단추를 눌러 번호를 등록해 주세요.");
-
-                        resetToIdleState();
-
-                    }
-
-                } else if (command.includes("딸")) {
-
-                    if (configData.daughter) {
-
-                        triggerCallConfirmation("딸", configData.daughter);
-
-                    } else {
-
-                        speak("아직 따님 번호가 등록되지 않았습니다. 설정 단추를 눌러 번호를 등록해 주세요.");
-
-                        resetToIdleState();
-
-                    }
-
-                } else {
-
-                    speak("누구에게 전화를 걸까요? 아들, 또는 딸 이라고 말씀해 주세요.");
-
-                    resetToIdleState();
+                    break;
 
                 }
+
+            }
+
+            if (foundContact) {
+
+                triggerCallConfirmation(foundContact.name, foundContact.phone);
 
                 return;
 
@@ -1686,8 +1976,6 @@
 
 
  
-
-            // 4. 시간 물어보기 명령
 
             if (command.includes("시간") || command.includes("몇 시") || command.includes("시냐")) {
 
@@ -1704,7 +1992,7 @@
 
  
 
-                speak(`지금은 ${ampm} ${displayHours}시 ${minutes}분입니다. 건강을 위해 잊지 말고 꼭 약 챙겨 드세요 어르신!`);
+                speak(`지금은 ${ampm} ${displayHours}시 ${minutes}분입니다. 건강을 위해 잊지 말고 꼭 약 챙겨 드세요!`);
 
                 return;
 
@@ -1713,21 +2001,17 @@
 
  
 
-            // 일반 감성 말동무 및 실시간 건강 상담 ➔ 3단계 지능형 LLM 연동망 실행
-
             try {
 
                 const aiResponse = await runLLMOrFallback(command);
 
-                document.getElementById('status-display').innerText = aiResponse;
-
-                document.getElementById('status-display').className = "status-text text-primary";
+                document.getElementById('status-display').innerText = "👂 듣고 있어요...";
 
                 speak(aiResponse);
 
             } catch(e) {
 
-                speak("죄송해요 어르신, 제가 잠시 딴생각을 하느라 잘 알아듣지 못했어요. 다시 한번 말씀해 주세요.");
+                speak("죄송해요, 제가 잠시 다른 생각을 하느라 잘 알아듣지 못했어요. 다시 한번 말씀해 주세요.");
 
                 resetToIdleState();
 
