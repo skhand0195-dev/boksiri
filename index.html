@@ -576,7 +576,7 @@
 
         let isActiveState = false;
 
-        let isRecognitionRunning = false; // 🚨 마이크 실제 작동 여부 스위치
+        let isRecognitionRunning = false;
 
         let speakTimer = null;
 
@@ -977,7 +977,7 @@
 
  
 
-        // 🚨 [대수정] 24시간 연속 청취를 위해 마이크 시작/종료를 무한 자동 루프로만 통제합니다.
+        // 🚨 [핵심 복구] 갤럭시/아이폰 무한루프 방지 및 안전 마이크 부활 장치
 
         function restartMicSafely() {
 
@@ -986,19 +986,13 @@
 
  
 
-            // 이미 마이크가 구동 중이라면 중복 켜기를 철저히 차단합니다 (크래시 방지)
-
             if (recognition && !isRecognitionRunning) {
 
                 try {
 
                     recognition.start();
 
-                } catch(e) {
-
-                    console.log("마이크 부활 제어 통과");
-
-                }
+                } catch(e) {}
 
             }
 
@@ -1246,8 +1240,6 @@
 
  
 
-            // 🚨 [핵심 복원] 마이크가 꺼졌을 때, 똘똘한 복실이는 잠들지 않고 언제 어디서나 스스로 0.4초 만에 자동 부활합니다.
-
             recognition.onend = function() {
 
                 isRecognitionRunning = false;
@@ -1260,12 +1252,14 @@
 
                     }
 
-                }, 400); // 0.4초 딜레이 소생술 가동
+                }, 300);
 
             };
 
 
  
+
+            // 🚨 첫 가동 시 강제로 마이크 가동을 한 번 유도하여 아이폰/안드로이드 권한 팝업창을 띄웁니다! ⭐
 
             restartMicSafely();
 
@@ -1274,6 +1268,8 @@
 
  
 
+        // 🚨 [대수술 완료 ⭐] 복실이 버튼을 누를 때 100% 무조건 마이크를 직접 켜서 권한 팝업을 강제 소환합니다!
+
         window.toggleBoksiri = function() {
 
             if (/KAKAOTALK/i.test(navigator.userAgent)) {
@@ -1281,6 +1277,21 @@
                 alert("카카오톡 창에서는 마이크가 작동하지 않습니다! 오른쪽 아래 점3개를 누르고 다른 브라우저로 열어주세요!");
 
                 return;
+
+            }
+
+
+ 
+
+            // 🚨 마이크가 꺼져있으면 클릭 순간 즉시 마이크 전원 공급! (구글/애플 보안 규정 통과법)
+
+            if (!isRecognitionRunning) {
+
+                try {
+
+                    recognition.start();
+
+                } catch(e) {}
 
             }
 
@@ -1333,8 +1344,6 @@
 
  
 
-        // 🚨 [대기 모드 롤백 완료] 이제 마이크를 끄지 않고, 24시간 상시 청취 상태로 노랗게 얌전히 조는 중 상태를 유지합니다. ⭐
-
         function resetToIdleState() {
 
             isActiveState = false;
@@ -1369,8 +1378,6 @@
             window.speechSynthesis.cancel();
 
            
-
-            // 마이크 강제 종료 코드를 지우고, 마이크 상시 전원 공급을 가동시킵니다.
 
             setTimeout(restartMicSafely, 300);
 
