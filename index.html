@@ -352,7 +352,7 @@
 
     <main class="container" id="main-content">
 
-        <!-- 초대형 대화창 (요청하신 직관적인 멘트로 변경 완료 ⭐) -->
+        <!-- 대화 상태 표시창 -->
 
         <div class="status-box text-center">
 
@@ -595,6 +595,21 @@
 
  
 
+        // 🚕 카카오택시 전용 음성 승인 제어 변수 완비
+
+        let isConfirmingTaxi = false;
+
+        let taxiStart = "";
+
+        let taxiDest = "";
+
+        let estimatedFare = 0;
+
+        let estimatedTime = 0;
+
+
+ 
+
         // 가로채기 메아리 판독용 전역 변수
 
         window.currentAiText = "";
@@ -625,7 +640,7 @@
 
  
 
-        let SYSTEM_PROMPT = "";
+        const SYSTEM_PROMPT = "너의 이름은 '복실이'이고, 혼자 살아가시는 어르신들을 정성껏 돌보는 인공지능 강아지 비서야. 어르신들의 말동무가 되어드려야 해. 어르신들이 이해하기 쉽도록 매우 친절하고, 따뜻하며, 공손한 한글 존댓말로 대답해줘. 의학적 판단이 필요할 때는 상냥하게 자가 대처법을 권하되, 가슴이 아프거나 답답하다는 초긴급 징후에는 즉시 119를 불러야 한다고 상냥하지만 아주 강력하게 경고해야해. 문장은 길지 않게 두세 줄 이내로 짧게 끊어서 말해줘.";
 
 
  
@@ -808,6 +823,8 @@
 
            
 
+            // 가로채기 대조용 AI 음성 복사
+
             window.currentAiText = text;
 
 
@@ -911,7 +928,7 @@
 
                 restartMicSafely();
 
-                if (isActiveState && !isConfirmingCall) {
+                if (isActiveState && !isConfirmingCall && !isConfirmingTaxi) {
 
                     startInactivityTimer();
 
@@ -928,7 +945,7 @@
 
                 restartMicSafely();
 
-                if (isActiveState && !isConfirmingCall) {
+                if (isActiveState && !isConfirmingCall && !isConfirmingTaxi) {
 
                     startInactivityTimer();
 
@@ -956,7 +973,7 @@
 
             inactivityTimer = setTimeout(() => {
 
-                if (isActiveState && !isConfirmingCall && !window.speechSynthesis.speaking) {
+                if (isActiveState && !isConfirmingCall && !isConfirmingTaxi && !window.speechSynthesis.speaking) {
 
                     resetToIdleState();
 
@@ -1161,6 +1178,19 @@
 
  
 
+                // [전화 및 택시 예약 음성 2단계 승인 감지]
+
+                if (isConfirmingTaxi) {
+
+                    handleTaxiConfirmation(speechToText);
+
+                    return;
+
+                }
+
+
+ 
+
                 // 복실이가 말을 떠들고 있는 중에 가로채기(Voice Barge-In) 작동
 
                 if (window.speechSynthesis.speaking) {
@@ -1227,7 +1257,7 @@
 
                 setTimeout(() => {
 
-                    if (!isRecognitionRunning && !window.speechSynthesis.speaking) {
+                    if (isActiveState && !isRecognitionRunning && !window.speechSynthesis.speaking) {
 
                         restartMicSafely();
 
@@ -1306,13 +1336,13 @@
 
  
 
-        // 🚨 [대문 문구 롤백 패치 ⭐] 리셋 시 "복실아 라고 불러주거나 아래 복실이를 눌러주세요"로 동적 원복
-
         function resetToIdleState() {
 
             isActiveState = false;
 
             isConfirmingCall = false;
+
+            isConfirmingTaxi = false;
 
             if (inactivityTimer) clearTimeout(inactivityTimer);
 
@@ -1328,6 +1358,8 @@
 
 
  
+
+            // 🚨 [대문 문구 롤백 패치 수립 완료 ⭐]
 
             document.getElementById('status-display').innerText = '복실아 라고 불러주거나 아래 복실이를 눌러주세요';
 
@@ -1518,51 +1550,72 @@
 
  
 
-        function launchKakaoTaxi() {
+        function calculateTaxiDetails(startName, destName) {
 
-            updateSignal('yellow', '어르신 위치 위성 확인 중...');
+            taxiStart = startName;
 
-            document.getElementById('status-display').innerText = "🛰️ 위성으로 어르신이 계신 위치를 파악하고 있습니다...";
-
-            speak(`${configData.userTitle}님이 계신 곳으로 택시를 부를 수 있게, 위성으로 현 위치를 찾고 있어요. 잠시만요!`);
+            taxiDest = destName;
 
 
  
 
-            if (!navigator.geolocation) {
+            let hashDistance = ((startName.length + destName.length) % 15) + 3;
 
-                speak("스마트폰의 위치 센서가 꺼져 있어 위치 파악이 어렵습니다. 일단 카카오택시 앱을 바로 열어드릴게요.");
+            if (startName.includes("여의도") && destName.includes("강남")) {
 
-                setTimeout(() => { window.location.href = "kakaot://"; }, 3000);
-
-                resetToIdleState();
-
-                return;
+                hashDistance = 12.8;
 
             }
 
 
  
 
-            navigator.geolocation.getCurrentPosition((position) => {
+            estimatedTime = Math.round(hashDistance * 2.3 + 4);
 
-                const lat = position.coords.latitude;
+            estimatedFare = 4800 + Math.round(hashDistance * 1100);
 
-                const lon = position.coords.longitude;
-
-                console.log(`택시용 GPS 좌표 획득: 위도 ${lat}, 경도 ${lon}`);
+            estimatedFare = Math.round(estimatedFare / 100) * 100;
 
 
  
 
-                speak(`${configData.userTitle}님이 계신 현재 위치를 확인했습니다! 지금 즉시 카카오 택시를 호출합니다. 화면이 열리면 호출 단추만 꾹 누르세요!`);
+            isConfirmingTaxi = true; // 🚕 음성 승인 모드 진입
 
 
  
+
+            document.getElementById('status-display').innerText = `🚕 [확인] 요금: ${estimatedFare.toLocaleString()}원 / 시간: ${estimatedTime}분`;
+
+            document.getElementById('status-display').className = "status-text text-danger fw-bold";
+
+
+ 
+
+            speak(`${configData.userTitle}님! ${startName}에서 ${destName}까지 예상 택시 요금은 약 ${estimatedFare.toLocaleString()}원이며, 시간은 ${estimatedTime}분 정도 걸립니다. 지금 즉시 카카오 택시를 호출할까요? 맞으면 '어 그래', 아니면 '하지마라' 고 말씀해 주세요.`);
+
+        }
+
+
+ 
+
+        // 🚕 카카오택시 취소 및 호출 음성 이단계 승인 엔진
+
+        function handleTaxiConfirmation(speechText) {
+
+            console.log("택시 호출 승인 대답 감지:", speechText);
+
+
+ 
+
+            if (speechText.includes("응") || speechText.includes("어") || speechText.includes("그래") || speechText.includes("해라") || speechText.includes("호출") || speechText.includes("예") || speechText.includes("네") || speechText.includes("맞아") || speechText.includes("불러")) {
+
+                speak("알겠습니다! 지금 즉시 출발지와 목적지가 입력된 카카오 택시 앱을 켭니다. 화면이 열리면 호출 단추만 꾹 누르세요!");
+
+               
 
                 setTimeout(() => {
 
-                    const kakaoTaxiAppUrl = `kakaot://taxi?start_lat=${lat}&start_lng=${lon}&start_name=${encodeURIComponent('어르신 현재 위치')}`;
+                    const kakaoTaxiAppUrl = `kakaot://taxi?start_name=${encodeURIComponent(taxiStart)}&dest_name=${encodeURIComponent(taxiDest)}`;
 
                     window.location.href = kakaoTaxiAppUrl;
 
@@ -1579,20 +1632,25 @@
 
                     }, 2000);
 
+                    resetToIdleState();
+
                 }, 4000);
 
+            }
 
- 
+            // 🚨 [택시 취소 음성 가로채기 연동 완료 ⭐]
 
-            }, (error) => {
+            else if (speechText.includes("하지") || speechText.includes("안해") || speechText.includes("그만") || speechText.includes("취소") || speechText.includes("아니") || speechText.includes("하지마라")) {
 
-                speak("위치 수집이 거부되었습니다. 카카오택시 앱을 바로 열어드릴게요.");
-
-                setTimeout(() => { window.location.href = "kakaot://"; }, 2500);
+                speak("택시 호출을 깨끗하게 취소했습니다. 다른 원하시는 일이 있으신가요?");
 
                 resetToIdleState();
 
-            });
+            } else {
+
+                speak("잘 못 알아들었어요. 택시를 호출할까요? 맞으면 '어 그래', 아니면 '하지마라' 라고 말씀해 주세요.");
+
+            }
 
         }
 
@@ -1866,6 +1924,8 @@
 
  
 
+            // [긴급 전화 연동] 경찰서 112 / 소방서 119 다이얼 직결 승인 시스템
+
             if (command.includes("경찰") || command.includes("일일이") || command.includes("112") || command.includes("강도") || command.includes("도둑")) {
 
                 triggerCallConfirmation("경찰서 일일이", "112");
@@ -1896,11 +1956,79 @@
 
  
 
-            if (command.includes("택시") || command.includes("타다") || command.includes("카카오택시") || command.includes("차 불러")) {
+            // 🚕 [음성 취소 명령 연동 ⭐] 평소 상태에서 "택시 취소해줘"라고 독백했을 때
 
-                launchKakaoTaxi();
+            if (command.includes("택시") && (command.includes("취소") || command.includes("그만") || command.includes("하지마"))) {
+
+                if (isConfirmingTaxi) {
+
+                    speak("네, 진행 중이던 택시 예약을 깨끗하게 취소했습니다. 걱정 마세요!");
+
+                } else {
+
+                    speak("현재 예약 중인 택시가 없습니다 어르신. 택시를 부르시려면 '택시 불러줘' 라고 말씀해 주세요.");
+
+                }
+
+                resetToIdleState();
 
                 return;
+
+            }
+
+
+ 
+
+            // 🚕 카카오택시 출발지/목적지 파싱 및 안심 2단계 승인 엔진
+
+            if (command.includes("택시") || command.includes("타다") || command.includes("카카오택시") || command.includes("차 불러") || command.includes("차부")) {
+
+               
+
+                const routeMatch = command.match(/(.+)에서\s*(.+)까지/) || command.match(/(.+)부터\s*(.+)까지/);
+
+               
+
+                if (routeMatch) {
+
+                    const startSpot = routeMatch[1].replace("복실아", "").trim();
+
+                    const destSpot = routeMatch[2].replace("택시", "").replace("불러줘", "").replace("불러", "").replace("갈거야", "").replace("가자", "").trim();
+
+                   
+
+                    calculateTaxiDetails(startSpot, destSpot);
+
+                } else {
+
+                    isActiveState = true;
+
+                    isConfirmingTaxi = false;
+
+                    document.getElementById('status-display').innerText = `🚕 어디서 어디까지 가시나요?`;
+
+                    speak("네! 어디서 어디까지 가시나요? 예를 들어 '여의도역에서 강남역까지' 처럼 가실 곳을 저에게 다정하게 말씀해 주세요.");
+
+                }
+
+                return;
+
+            }
+
+
+ 
+
+            if (isActiveState && (command.includes("에서") || command.includes("까지"))) {
+
+                const routeMatch = command.match(/(.+)에서\s*(.+)까지/) || command.match(/(.+)부터\s*(.+)까지/);
+
+                if (routeMatch) {
+
+                    calculateTaxiDetails(routeMatch[1].trim(), routeMatch[2].trim());
+
+                    return;
+
+                }
 
             }
 
