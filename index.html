@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 
 <html lang="ko">
@@ -577,7 +576,7 @@
 
         let isActiveState = false;
 
-        let isRecognitionRunning = false;
+        let isRecognitionRunning = false; // 🚨 마이크 실제 작동 여부 스위치
 
         let speakTimer = null;
 
@@ -595,8 +594,6 @@
 
  
 
-        // 🚕 카카오택시 전용 음성 승인 제어 변수 완비
-
         let isConfirmingTaxi = false;
 
         let taxiStart = "";
@@ -609,8 +606,6 @@
 
 
  
-
-        // 가로채기 메아리 판독용 전역 변수
 
         window.currentAiText = "";
 
@@ -651,11 +646,7 @@
 
             initVoiceEngine();
 
-            setTimeout(() => {
-
-                speak(`${configData.userTitle}님 안녕하십니까! 똘똘한 강아지 비서 복실이 대령했습니다. 몸이 불편하시거나 심심하실 때 언제든 복실아 하고 편하게 불러주세요.`);
-
-            }, 800);
+            updateSignal('yellow', '복실이가 조는 중... 복실이를 한번 터치해 주세요!');
 
         };
 
@@ -670,7 +661,9 @@
 
                 if (saved) {
 
-                    configData = JSON.parse(saved);
+                    const parsed = JSON.parse(saved);
+
+                    configData = { ...configData, ...parsed };
 
                 }
 
@@ -815,15 +808,11 @@
 
  
 
-        // --- 🗣️ 상냥한 여성 / 듬직한 남성 목소리 전환 합성 시스템 ---
-
         function speak(text) {
 
             updateSignal('yellow', '복실이가 대답하는 중... (마이크 상시 대기)');
 
            
-
-            // 가로채기 대조용 AI 음성 복사
 
             window.currentAiText = text;
 
@@ -988,6 +977,8 @@
 
  
 
+        // 🚨 [대수정] 24시간 연속 청취를 위해 마이크 시작/종료를 무한 자동 루프로만 통제합니다.
+
         function restartMicSafely() {
 
             if (/KAKAOTALK/i.test(navigator.userAgent)) return;
@@ -995,13 +986,19 @@
 
  
 
+            // 이미 마이크가 구동 중이라면 중복 켜기를 철저히 차단합니다 (크래시 방지)
+
             if (recognition && !isRecognitionRunning) {
 
                 try {
 
                     recognition.start();
 
-                } catch(e) {}
+                } catch(e) {
+
+                    console.log("마이크 부활 제어 통과");
+
+                }
 
             }
 
@@ -1178,8 +1175,6 @@
 
  
 
-                // [전화 및 택시 예약 음성 2단계 승인 감지]
-
                 if (isConfirmingTaxi) {
 
                     handleTaxiConfirmation(speechToText);
@@ -1251,19 +1246,21 @@
 
  
 
+            // 🚨 [핵심 복원] 마이크가 꺼졌을 때, 똘똘한 복실이는 잠들지 않고 언제 어디서나 스스로 0.4초 만에 자동 부활합니다.
+
             recognition.onend = function() {
 
                 isRecognitionRunning = false;
 
                 setTimeout(() => {
 
-                    if (isActiveState && !isRecognitionRunning && !window.speechSynthesis.speaking) {
+                    if (!isRecognitionRunning && !window.speechSynthesis.speaking) {
 
                         restartMicSafely();
 
                     }
 
-                }, 300);
+                }, 400); // 0.4초 딜레이 소생술 가동
 
             };
 
@@ -1336,6 +1333,8 @@
 
  
 
+        // 🚨 [대기 모드 롤백 완료] 이제 마이크를 끄지 않고, 24시간 상시 청취 상태로 노랗게 얌전히 조는 중 상태를 유지합니다. ⭐
+
         function resetToIdleState() {
 
             isActiveState = false;
@@ -1359,8 +1358,6 @@
 
  
 
-            // 🚨 [대문 문구 롤백 패치 수립 완료 ⭐]
-
             document.getElementById('status-display').innerText = '복실아 라고 불러주거나 아래 복실이를 눌러주세요';
 
             document.getElementById('status-display').className = "status-text text-success";
@@ -1372,6 +1369,8 @@
             window.speechSynthesis.cancel();
 
            
+
+            // 마이크 강제 종료 코드를 지우고, 마이크 상시 전원 공급을 가동시킵니다.
 
             setTimeout(restartMicSafely, 300);
 
@@ -1579,7 +1578,7 @@
 
  
 
-            isConfirmingTaxi = true; // 🚕 음성 승인 모드 진입
+            isConfirmingTaxi = true;
 
 
  
@@ -1598,8 +1597,6 @@
 
  
 
-        // 🚕 카카오택시 취소 및 호출 음성 이단계 승인 엔진
-
         function handleTaxiConfirmation(speechText) {
 
             console.log("택시 호출 승인 대답 감지:", speechText);
@@ -1615,7 +1612,7 @@
 
                 setTimeout(() => {
 
-                    const kakaoTaxiAppUrl = `kakaot://taxi?start_name=${encodeURIComponent(taxiStart)}&dest_name=${encodeURIComponent(taxiDest)}`;
+                    const kakaoTaxiAppUrl = `kakaot://taxi?start_lat=${lat}&start_lng=${lon}&start_name=${encodeURIComponent(taxiStart)}&dest_name=${encodeURIComponent(taxiDest)}`;
 
                     window.location.href = kakaoTaxiAppUrl;
 
@@ -1637,8 +1634,6 @@
                 }, 4000);
 
             }
-
-            // 🚨 [택시 취소 음성 가로채기 연동 완료 ⭐]
 
             else if (speechText.includes("하지") || speechText.includes("안해") || speechText.includes("그만") || speechText.includes("취소") || speechText.includes("아니") || speechText.includes("하지마라")) {
 
@@ -1924,8 +1919,6 @@
 
  
 
-            // [긴급 전화 연동] 경찰서 112 / 소방서 119 다이얼 직결 승인 시스템
-
             if (command.includes("경찰") || command.includes("일일이") || command.includes("112") || command.includes("강도") || command.includes("도둑")) {
 
                 triggerCallConfirmation("경찰서 일일이", "112");
@@ -1955,31 +1948,6 @@
 
 
  
-
-            // 🚕 [음성 취소 명령 연동 ⭐] 평소 상태에서 "택시 취소해줘"라고 독백했을 때
-
-            if (command.includes("택시") && (command.includes("취소") || command.includes("그만") || command.includes("하지마"))) {
-
-                if (isConfirmingTaxi) {
-
-                    speak("네, 진행 중이던 택시 예약을 깨끗하게 취소했습니다. 걱정 마세요!");
-
-                } else {
-
-                    speak("현재 예약 중인 택시가 없습니다 어르신. 택시를 부르시려면 '택시 불러줘' 라고 말씀해 주세요.");
-
-                }
-
-                resetToIdleState();
-
-                return;
-
-            }
-
-
- 
-
-            // 🚕 카카오택시 출발지/목적지 파싱 및 안심 2단계 승인 엔진
 
             if (command.includes("택시") || command.includes("타다") || command.includes("카카오택시") || command.includes("차 불러") || command.includes("차부")) {
 
