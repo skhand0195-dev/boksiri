@@ -47,9 +47,7 @@ cat > /mnt/user-data/outputs/boksiri.html << 'HTMLEOF'
 
         .boksiri-btn.active { background-color: #e03131 !important; border-color: #c92a2a !important; box-shadow: 0 8px 25px rgba(224,49,49,0.4) !important; }
 
-        .boksiri-btn img { width: 120px; height: 120px; object-fit: contain; animation: earWiggle 1.5s ease-in-out infinite; transform-origin: center bottom; }
-
-        @keyframes earWiggle { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
+        .boksiri-btn img { width: 120px; height: 120px; object-fit: contain; }
 
         .status-box { background-color: white; border: 3px solid #e2d9cf; border-radius: 20px; padding: 20px; margin: 20px 15px; min-height: 180px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
 
@@ -309,9 +307,19 @@ cat > /mnt/user-data/outputs/boksiri.html << 'HTMLEOF'
 
  
 
+        // 화면 꺼짐 방지
+
         async function requestWakeLock() {
 
-            try { if ('wakeLock' in navigator) { wakeLock = await navigator.wakeLock.request('screen'); } } catch(e) {}
+            try {
+
+                if ('wakeLock' in navigator) {
+
+                    wakeLock = await navigator.wakeLock.request('screen');
+
+                }
+
+            } catch(e) {}
 
         }
 
@@ -371,7 +379,11 @@ cat > /mnt/user-data/outputs/boksiri.html << 'HTMLEOF'
 
                     updateSignal('red', '마이크가 차단되어 있습니다. 위 버튼을 눌러 허용해 주세요.');
 
-                } else if (result.state === 'prompt') { requestMicPermission(); }
+                } else if (result.state === 'prompt') {
+
+                    requestMicPermission();
+
+                }
 
                 result.onchange = function() {
 
@@ -434,7 +446,7 @@ cat > /mnt/user-data/outputs/boksiri.html << 'HTMLEOF'
 
             const title = configData.userTitle;
 
-            SYSTEM_PROMPT = `너의 이름은 '복실이'이고, 혼자 사시는 어르신을 돌보는 인공지능 강아지 비서야. 대화 상대방의 호칭은 '${title}'이야. 호칭 뒤에 '님'을 붙이지 말고, 대화 중에 매번 부르지 말고 가끔씩만 자연스럽게 불러줘. 친절하고 공손한 존댓말로 대답해줘. 질문에 성의있게 답하되, 어르신이 듣기 편하게 3~5문장 정도로 답해줘. 날씨를 물으면 반드시 get_weather 도구를 사용해서 실제 날씨 데이터로 답해줘. 뉴스나 정보를 물으면 구체적으로 알려줘. 이전 대화를 기억하고 이어서 대화해. 가슴이 아프거나 답답하다고 하면 즉시 119를 부르라고 강하게 권해줘.`;
+            SYSTEM_PROMPT = `너의 이름은 '복실이'이고, 혼자 사시는 어르신을 돌보는 인공지능 강아지 비서야. 대화 상대방의 호칭은 '${title}'이야. 호칭을 부를 때는 반드시 '${title}'라고만 하고 뒤에 '님' 같은 글자를 붙이지 마. 그리고 호칭은 대화 중에 매번 부르지 말고, 정말 필요할 때 가끔씩만 자연스럽게 불러줘. 매 문장마다 호칭을 반복하면 안 돼. 친절하고 공손한 존댓말로, 짧고 자연스럽게 대답해줘. 이전 대화를 기억하고 이어서 대화해. 가슴이 아프거나 답답하다고 하면 즉시 119를 부르라고 강하게 권해줘. 대답은 한두 문장으로 짧게 해줘.`;
 
         }
 
@@ -638,7 +650,11 @@ cat > /mnt/user-data/outputs/boksiri.html << 'HTMLEOF'
 
             if (/KAKAOTALK/i.test(navigator.userAgent)) return;
 
-            if (recognition && !isRecognitionRunning) { try { recognition.start(); } catch(e) {} }
+            if (recognition && !isRecognitionRunning) {
+
+                try { recognition.start(); } catch(e) {}
+
+            }
 
         }
 
@@ -860,11 +876,15 @@ cat > /mnt/user-data/outputs/boksiri.html << 'HTMLEOF'
 
         function playVideoAutomatically(searchQuery) {
 
-            const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchQuery)}`;
+            document.getElementById('playing-title').innerText = `📺 ${searchQuery}`;
 
-            window.open(url, '_blank');
+            const theater = document.getElementById('theater-view');
 
-            resetToIdleState();
+            theater.style.setProperty('display', 'flex', 'important');
+
+            const youtubeEmbedUrl = `https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent(searchQuery)}&autoplay=1`;
+
+            document.getElementById('youtube-iframe').src = youtubeEmbedUrl;
 
         }
 
@@ -880,6 +900,118 @@ cat > /mnt/user-data/outputs/boksiri.html << 'HTMLEOF'
             speak("노래를 껐어요. 다른 말씀 하셔도 돼요.");
 
             resetToIdleState();
+
+        }
+
+
+ 
+
+        function interpretWMOCode(code) {
+
+            if (code === 0) return "아주 맑음";
+
+            if ([1,2,3].includes(code)) return "구름 조금 낀 맑은 날씨";
+
+            if ([45,48].includes(code)) return "안개 낀 날씨";
+
+            if ([51,53,55,61,63,65].includes(code)) return "비가 오는 날씨";
+
+            if ([71,73,75,77].includes(code)) return "눈이 오는 날씨";
+
+            if ([80,81,82].includes(code)) return "소나기가 오는 날씨";
+
+            if ([95,96,99].includes(code)) return "천둥번개 치는 날씨";
+
+            return "흐린 날씨";
+
+        }
+
+
+ 
+
+        // 다른 지역 날씨 조회
+
+        async function fetchWeatherByCity(cityName) {
+
+            updateSignal('yellow', cityName + ' 날씨 조회 중...');
+
+            document.getElementById('status-display').innerText = `🛰 ${cityName} 날씨를 찾고 있어요...`;
+
+            try {
+
+                const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=ko`);
+
+                const geoData = await geoRes.json();
+
+                if (!geoData.results || geoData.results.length === 0) {
+
+                    speak(`${cityName}이라는 지역을 찾지 못했어요. 다시 말씀해 주세요.`); resetToIdleState(); return;
+
+                }
+
+                const lat = geoData.results[0].latitude;
+
+                const lon = geoData.results[0].longitude;
+
+                const foundName = geoData.results[0].name;
+
+                await reportWeather(lat, lon, foundName);
+
+            } catch(e) { speak("날씨 조회 중 문제가 생겼어요."); resetToIdleState(); }
+
+        }
+
+
+ 
+
+        async function reportWeather(lat, lon, placeName) {
+
+            try {
+
+                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=auto`);
+
+                const data = await response.json();
+
+                const currentTemp = Math.round(data.current.temperature_2m);
+
+                const currentWeatherText = interpretWMOCode(data.current.weather_code);
+
+                const tomorrowMin = Math.round(data.daily.temperature_2m_min[1]);
+
+                const tomorrowMax = Math.round(data.daily.temperature_2m_max[1]);
+
+                const tomorrowWeatherText = interpretWMOCode(data.daily.weather_code[1]);
+
+                const report = `${placeName}의 오늘 날씨는 ${currentWeatherText}이고 기온은 ${currentTemp}도예요. 내일은 ${tomorrowMin}도에서 ${tomorrowMax}도이고 ${tomorrowWeatherText}가 예상돼요.`;
+
+                document.getElementById('status-display').innerText = `☀ ${placeName} 오늘: ${currentWeatherText} ${currentTemp}도 / 내일: ${tomorrowWeatherText} ${tomorrowMin}~${tomorrowMax}도`;
+
+                document.getElementById('status-display').className = "status-text text-primary";
+
+                speak(report);
+
+            } catch(err) { speak("날씨 신호가 잠깐 끊겼어요."); resetToIdleState(); }
+
+        }
+
+
+ 
+
+        function fetchLocationAndWeather() {
+
+            updateSignal('yellow', '내 위치 날씨 조회 중...');
+
+            document.getElementById('status-display').innerText = "🛰 지금 계신 동네 날씨를 찾고 있어요...";
+
+            speak("지금 계신 곳 날씨를 알아볼게요. 잠시만요!");
+
+            if (!navigator.geolocation) { speak("위치 센서가 꺼져 있어요."); resetToIdleState(); return; }
+
+            navigator.geolocation.getCurrentPosition(async (position) => {
+
+                await reportWeather(position.coords.latitude, position.coords.longitude, "지금 계신 곳");
+
+            }, () => { speak("위치 확인을 허용해 주셔야 동네 날씨를 찾을 수 있어요."); resetToIdleState(); }, { timeout: 10000 });
 
         }
 
@@ -938,30 +1070,13 @@ cat > /mnt/user-data/outputs/boksiri.html << 'HTMLEOF'
 
         async function askAI(userMessage) {
 
-            let lat = null, lon = null;
-
-            try {
-
-                const pos = await new Promise((resolve, reject) => {
-
-                    navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000, maximumAge: 600000 });
-
-                });
-
-                lat = pos.coords.latitude; lon = pos.coords.longitude;
-
-            } catch(e) {}
-
-
- 
-
             const response = await fetch(RELAY_URL, {
 
                 method: "POST",
 
                 headers: { "Content-Type": "application/json" },
 
-                body: JSON.stringify({ message: userMessage, system: SYSTEM_PROMPT, history: conversationHistory, lat: lat, lon: lon })
+                body: JSON.stringify({ message: userMessage, system: SYSTEM_PROMPT, history: conversationHistory })
 
             });
 
@@ -1046,6 +1161,21 @@ cat > /mnt/user-data/outputs/boksiri.html << 'HTMLEOF'
 
  
 
+        // 지역명 추출 (날씨용)
+
+        function extractCity(command) {
+
+            const cleaned = command.replace(/복실아|날씨|어때|어떄|알려줘|어떻게|좀|오늘|내일|지금/g, "").trim();
+
+            if (cleaned.length >= 2 && cleaned.length <= 10) return cleaned;
+
+            return null;
+
+        }
+
+
+ 
+
         async function handleCommand(command) {
 
             if (command.includes("꺼") || command.includes("정지") || command.includes("중단") || command.includes("그만") || command.includes("멈춰")) { closeTheater(); return; }
@@ -1053,6 +1183,23 @@ cat > /mnt/user-data/outputs/boksiri.html << 'HTMLEOF'
             if (command.includes("경찰") || command.includes("112")) { triggerCallConfirmation("경찰서", "112"); return; }
 
             if (command.includes("소방서") || command.includes("119") || command.includes("불났") || command.includes("구급차")) { triggerCallConfirmation("소방서", "119"); return; }
+
+
+ 
+
+            // 날씨: 지역명 있으면 그 지역, 없으면 내 위치
+
+            if (command.includes("날씨") || command.includes("기온") || command.includes("더워") || command.includes("추워")) {
+
+                const city = extractCity(command);
+
+                if (city && city.length >= 2) { fetchWeatherByCity(city); }
+
+                else { fetchLocationAndWeather(); }
+
+                return;
+
+            }
 
 
  
@@ -1079,6 +1226,8 @@ cat > /mnt/user-data/outputs/boksiri.html << 'HTMLEOF'
 
 
  
+
+            // 노래
 
             if (command.includes("노래") || command.includes("음악") || command.includes("트로트") || command.includes("틀어") || command.includes("들려") || command.includes("불러줘")) {
 
