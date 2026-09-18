@@ -1,91 +1,68 @@
 
-export default {
 
-  async fetch(request, env) {
+<!DOCTYPE html>
 
-    const cors = {
+<html>
 
-      "Access-Control-Allow-Origin": "*",
+<head><meta charset="UTF-8"><title>중계소 테스트</title></head>
 
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
+<body style="font-family:sans-serif; padding:20px; font-size:18px;">
 
-      "Access-Control-Allow-Headers": "Content-Type"
+    <h2>🔧 복실이 중계소 테스트</h2>
 
-    };
+    <button onclick="test()" style="font-size:22px; padding:15px 30px; background:#fdd835; border:none; border-radius:10px;">AI 테스트 시작</button>
 
-    if (request.method === "OPTIONS") return new Response(null, { headers: cors });
+    <div id="result" style="margin-top:20px; padding:15px; background:#f0f0f0; border-radius:10px; min-height:100px; white-space:pre-wrap;">
 
-    if (request.method !== "POST") {
+        버튼을 눌러주세요...
 
-      return new Response(JSON.stringify({ answer: "복실이 중계 서버가 정상 작동 중입니다." }),
+    </div>
 
-        { headers: { "Content-Type": "application/json", ...cors } });
+    <script>
 
-    }
+        async function test() {
 
-    try {
+            const box = document.getElementById('result');
 
-      const body = await request.json();
+            box.innerText = "⏳ 중계소에 물어보는 중...";
 
-      const userMessage = body.message || "";
+            try {
 
-      const systemPrompt = body.system || "";
+                const res = await fetch("https://boksiri.skhand0195.workers.dev", {
 
-      const history = Array.isArray(body.history) ? body.history : [];
+                    method: "POST",
 
-      const contents = [...history, { role: "user", parts: [{ text: userMessage }] }];
+                    headers: { "Content-Type": "application/json" },
 
-      const r = await fetch(
+                    body: JSON.stringify({
 
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${env.GEMINI_KEY}`,
+                        message: "안녕? 너는 누구야?",
 
-        {
+                        system: "너는 친절한 강아지 비서 복실이야.",
 
-          method: "POST",
+                        history: []
 
-          headers: { "Content-Type": "application/json" },
+                    })
 
-          body: JSON.stringify({
+                });
 
-            system_instruction: { parts: [{ text: systemPrompt }] },
+                const data = await res.json();
 
-            contents: contents
+                box.innerHTML = "✅ 응답 받음!\n\n답변: " + JSON.stringify(data, null, 2);
 
-          })
+            } catch(e) {
+
+                box.innerHTML = "❌ 실패!\n에러: " + e.message;
+
+            }
 
         }
 
-      );
+    </script>
 
-      const data = await r.json();
+</body>
 
-      const answer = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-      if (answer) {
-
-        return new Response(JSON.stringify({ answer }), { headers: { "Content-Type": "application/json", ...cors } });
-
-      } else {
-
-        // 진짜 에러를 그대로 보여줌
-
-        return new Response(JSON.stringify({ answer: "디버그: " + JSON.stringify(data) }),
-
-          { headers: { "Content-Type": "application/json", ...cors } });
-
-      }
-
-    } catch (e) {
-
-      return new Response(JSON.stringify({ answer: "예외에러: " + e.message }),
-
-        { headers: { "Content-Type": "application/json", ...cors } });
-
-    }
-
-  }
-
-};
+</html>
 
 
 
