@@ -1,0 +1,64 @@
+
+<!DOCTYPE html>
+
+<html>
+
+<head><meta charset="UTF-8"><title>중계소 테스트</title></head>
+
+<body style="font-family:sans-serif; padding:20px; font-size:18px;">
+
+    <h2>🔧 복실이 중계소 테스트</h2>
+
+    <button onclick="test()" style="font-size:22px; padding:15px 30px; background:#fdd835; border:none; border-radius:10px;">AI 테스트 시작</button>
+
+    <div id="result" style="margin-top:20px; padding:15px; background:#f0f0f0; border-radius:10px; min-height:100px; white-space:pre-wrap;">
+
+        버튼을 눌러주세요...
+
+    </div>
+
+    <script>
+
+        async function test() {
+
+            const box = document.getElementById('result');
+
+            box.innerText = "⏳ 중계소에 물어보는 중...";
+
+            try {
+
+                const res = await fetch("https://boksiri.skhand0195.workers.dev", {
+
+                    method: "POST",
+
+                    headers: { "Content-Type": "application/json" },
+
+                    body: JSON.stringify({
+
+                        message: "안녕? 너는 누구야?",
+
+                        system: "너는 친절한 강아지 비서 복실이야.",
+
+                        history: []
+
+                    })
+
+                });
+
+                const data = await res.json();
+
+                box.innerHTML = "✅ 응답 받음!\n\n답변: " + JSON.stringify(data, null, 2);
+
+            } catch(e) {
+
+                box.innerHTML = "❌ 실패!\n에러: " + e.message;
+
+            }
+
+        }
+
+    </script>
+
+</body>
+
+</html>
