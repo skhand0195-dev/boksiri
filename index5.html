@@ -1,0 +1,1155 @@
+
+cat > /mnt/user-data/outputs/boksiri.html << 'HTMLEOF'
+
+<!DOCTYPE html>
+
+<html lang="ko">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>똘똘한 복실이</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <style>
+
+        body { font-family: 'Nanum Gothic', sans-serif; background-color: #fcf8f2; color: #4a3f35; user-select: none; padding-bottom: 30px; }
+
+        .app-header { background-color: #8d7b68; color: white; padding: 18px 10px; border-bottom: 4px solid #6f5f51; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+
+        .mic-signal-bar { background-color: #e2d9cf; padding: 8px; font-size: 0.95rem; font-weight: bold; text-align: center; border-bottom: 2px solid #d4c5b9; }
+
+        .signal-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+
+        .sig-red { background-color: #dc3545; animation: blink 1s infinite alternate; }
+
+        .sig-yellow { background-color: #ffc107; }
+
+        .sig-green { background-color: #28a745; animation: pulse-green 1.2s infinite; }
+
+        @keyframes blink { from { opacity: 0.4; } to { opacity: 1; } }
+
+        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(40,167,69,0.7); } 70% { box-shadow: 0 0 0 10px rgba(40,167,69,0); } 100% { box-shadow: 0 0 0 0 rgba(40,167,69,0); } }
+
+        .boksiri-container { display: flex; justify-content: center; align-items: center; margin: 40px 0; }
+
+        .boksiri-btn { width: 220px; height: 220px; border-radius: 50%; background-color: #fdd835; border: 8px solid #8d7b68; box-shadow: 0 8px 20px rgba(141,123,104,0.2); display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: all 0.25s ease; }
+
+        .boksiri-btn:active { transform: scale(0.92); }
+
+        .boksiri-btn.active { background-color: #e03131 !important; border-color: #c92a2a !important; box-shadow: 0 8px 25px rgba(224,49,49,0.4) !important; }
+
+        .boksiri-btn img { width: 120px; height: 120px; object-fit: contain; animation: earWiggle 1.5s ease-in-out infinite; transform-origin: center bottom; }
+
+        @keyframes earWiggle { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
+
+        .status-box { background-color: white; border: 3px solid #e2d9cf; border-radius: 20px; padding: 20px; margin: 20px 15px; min-height: 180px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+
+        .status-text { font-size: 1.75rem; font-weight: 800; line-height: 1.6; word-break: keep-all; }
+
+        #theater-view { display: none !important; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #000; z-index: 3000; flex-direction: column; justify-content: center; align-items: center; }
+
+        .video-wrapper { width: 100%; max-width: 640px; aspect-ratio: 16/9; background: #1a1a1a; }
+
+        .close-theater-btn { width: 80%; max-width: 300px; font-size: 1.8rem; font-weight: 800; padding: 15px 0; border-radius: 40px; margin-top: 30px; box-shadow: 0 5px 15px rgba(255,255,255,0.2); }
+
+        #settingsModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+
+        #mic-permission-banner { display: none; background: #fff3cd; border: 2px solid #ffc107; border-radius: 12px; margin: 10px 15px; padding: 14px 16px; font-size: 1.1rem; font-weight: 700; color: #7d5a00; text-align: center; }
+
+        #mic-permission-banner button { margin-top: 10px; font-size: 1.1rem; font-weight: 800; padding: 10px 28px; border-radius: 30px; border: none; background: #ffc107; color: #3d2e00; cursor: pointer; }
+
+    </style>
+
+</head>
+
+<body>
+
+    <header class="app-header text-center position-relative">
+
+        <h1 class="fw-bold m-0" style="font-size: 2rem;">🐶 똘똘한 복실이</h1>
+
+        <button class="btn btn-sm btn-outline-light position-absolute" style="top: 18px; right: 15px; font-weight: bold;" onclick="openSettings()"><i class="bi bi-gear-fill"></i> 설정</button>
+
+    </header>
+
+
+ 
+
+    <div class="mic-signal-bar" id="signal-bar">
+
+        <span class="signal-dot sig-yellow" id="signal-dot"></span>
+
+        <span id="signal-text" class="text-warning">마이크 준비 중... 복실이를 터치해 주세요!</span>
+
+    </div>
+
+
+ 
+
+    <div id="mic-permission-banner">
+
+        📵 마이크 사용이 차단되어 있어요!<br>
+
+        아래 버튼을 눌러 마이크를 다시 허용해 주세요.
+
+        <br>
+
+        <button onclick="requestMicPermission()">🎙 마이크 허용하기</button>
+
+        <br>
+
+        <span style="font-size:0.8rem; color:#7d5a00; margin-top:6px; display:block;">
+
+            ※ 허용이 안 되면: 브라우저 주소창 왼쪽 🔒 자물쇠 → 마이크 → 허용 → 새로고침
+
+        </span>
+
+    </div>
+
+
+ 
+
+    <main class="container" id="main-content">
+
+        <div class="status-box text-center">
+
+            <span class="status-text text-success" id="status-display">복실아 라고 불러주거나 아래 복실이를 눌러주세요</span>
+
+        </div>
+
+        <div class="boksiri-container">
+
+            <button class="boksiri-btn" id="boksiri-main-btn" onclick="toggleBoksiri()">
+
+                <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" alt="복실이">
+
+                <span class="fw-bold mt-2 text-dark" style="font-size: 1.15rem;" id="btn-text">복실이 부르기</span>
+
+            </button>
+
+        </div>
+
+    </main>
+
+
+ 
+
+    <div id="theater-view">
+
+        <div class="text-white text-center mb-3">
+
+            <h2 class="fw-bold text-warning mb-1" id="playing-title">노래를 재생합니다</h2>
+
+            <p class="small text-muted m-0">스마트폰을 터치하지 않고 편안히 감상하세요</p>
+
+        </div>
+
+        <div class="video-wrapper">
+
+            <iframe id="youtube-iframe" width="100%" height="100%" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+        </div>
+
+        <button class="btn btn-danger close-theater-btn" onclick="closeTheater()"><i class="bi bi-stop-circle-fill"></i> 노래 끄기</button>
+
+    </div>
+
+
+ 
+
+    <div id="settingsModal">
+
+        <div class="card p-4 mx-3 shadow" style="width: 100%; max-width: 420px; background: white; border-radius: 20px; max-height: 90vh; overflow-y: auto;">
+
+            <h4 class="fw-bold text-center border-bottom pb-2 mb-3">⚙ 초기 환경 설정</h4>
+
+            <div class="mb-3 border-bottom pb-3">
+
+                <h6 class="fw-bold text-primary"><i class="bi bi-person-badge-fill"></i> 1. 맞춤형 호칭 및 음성 설정</h6>
+
+                <div class="row g-2 mt-2">
+
+                    <div class="col-6">
+
+                        <label class="form-label small fw-bold">상대방 호칭</label>
+
+                        <select class="form-select form-select-sm" id="user-title">
+
+                            <option value="할아버지" selected>할아버지 👴</option>
+
+                            <option value="할머니">할머니 👵</option>
+
+                            <option value="아버님">아버님 👨</option>
+
+                            <option value="어머님">어머님 👩</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-6">
+
+                        <label class="form-label small fw-bold">복실이 목소리</label>
+
+                        <select class="form-select form-select-sm" id="voice-gender">
+
+                            <option value="granddaughter" selected>상냥한 여성 (손녀)</option>
+
+                            <option value="grandson">상냥한 남성 (손자)</option>
+
+                            <option value="woman30">30대 상냥한 여자</option>
+
+                            <option value="man30">30대 상냥한 남자</option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="mb-3">
+
+                <h6 class="fw-bold text-success"><i class="bi bi-telephone-fill"></i> 2. 복실이 전용 전화번호부</h6>
+
+                <p class="text-muted" style="font-size:0.65rem; line-height:1.4;">"아들한테 전화해줘" 라고 말할 때 연결될 연락처들을 적어주세요.</p>
+
+                <div id="contact-list-container" class="mb-2" style="max-height: 120px; overflow-y: auto;"></div>
+
+                <div class="row g-1">
+
+                    <div class="col-4"><input type="text" class="form-control form-control-sm" id="new-contact-name" placeholder="호칭(예: 아들)"></div>
+
+                    <div class="col-6"><input type="tel" class="form-control form-control-sm" id="new-contact-phone" placeholder="전화번호(- 제외)"></div>
+
+                    <div class="col-2"><button class="btn btn-sm btn-success w-100" onclick="addNewContact()">등록</button></div>
+
+                </div>
+
+            </div>
+
+            <div class="row g-2 mt-2">
+
+                <div class="col-6"><button class="btn btn-secondary w-100 py-2 fw-bold btn-sm" onclick="closeSettings()">취소</button></div>
+
+                <div class="col-6"><button class="btn btn-warning w-100 py-2 fw-bold btn-sm" onclick="saveSettings()">저장하기</button></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+ 
+
+    <script>
+
+        const RELAY_URL = "https://boksiri.skhand0195.workers.dev";
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        let recognition = null;
+
+        let isActiveState = false;
+
+        let isRecognitionRunning = false;
+
+        let speakTimer = null;
+
+        let inactivityTimer = null;
+
+        let isConfirmingCall = false;
+
+        let pendingPhoneNumber = "";
+
+        let pendingPhoneName = "";
+
+        let isConfirmingTaxi = false;
+
+        let taxiStart = "";
+
+        let taxiDest = "";
+
+        let estimatedFare = 0;
+
+        let estimatedTime = 0;
+
+        window.currentAiText = "";
+
+        let SYSTEM_PROMPT = "";
+
+        let conversationHistory = [];
+
+        let wakeLock = null;
+
+
+ 
+
+        let configData = {
+
+            userTitle: "할아버지",
+
+            voiceGender: "granddaughter",
+
+            contacts: [{ name: "아들", phone: "" }, { name: "딸", phone: "" }]
+
+        };
+
+
+ 
+
+        async function requestWakeLock() {
+
+            try { if ('wakeLock' in navigator) { wakeLock = await navigator.wakeLock.request('screen'); } } catch(e) {}
+
+        }
+
+        function releaseWakeLock() {
+
+            try { if (wakeLock) { wakeLock.release(); wakeLock = null; } } catch(e) {}
+
+        }
+
+        document.addEventListener('visibilitychange', () => {
+
+            if (wakeLock !== null && document.visibilityState === 'visible' && isActiveState) requestWakeLock();
+
+        });
+
+
+ 
+
+        async function requestMicPermission() {
+
+            try {
+
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+                stream.getTracks().forEach(t => t.stop());
+
+                document.getElementById('mic-permission-banner').style.display = 'none';
+
+                updateSignal('yellow', '마이크 허용됨! 복실이를 터치해 주세요.');
+
+                if (!recognition) { initVoiceEngine(); } else { restartMicSafely(); }
+
+            } catch(e) {
+
+                updateSignal('red', '마이크 차단됨 - 브라우저 설정에서 직접 허용해 주세요');
+
+                document.getElementById('mic-permission-banner').style.display = 'block';
+
+            }
+
+        }
+
+
+ 
+
+        async function checkMicPermissionStatus() {
+
+            if (!navigator.permissions) return;
+
+            try {
+
+                const result = await navigator.permissions.query({ name: 'microphone' });
+
+                if (result.state === 'denied') {
+
+                    document.getElementById('mic-permission-banner').style.display = 'block';
+
+                    updateSignal('red', '마이크가 차단되어 있습니다. 위 버튼을 눌러 허용해 주세요.');
+
+                } else if (result.state === 'prompt') { requestMicPermission(); }
+
+                result.onchange = function() {
+
+                    if (result.state === 'granted') {
+
+                        document.getElementById('mic-permission-banner').style.display = 'none';
+
+                        if (!recognition) initVoiceEngine(); else restartMicSafely();
+
+                    } else if (result.state === 'denied') {
+
+                        document.getElementById('mic-permission-banner').style.display = 'block';
+
+                    }
+
+                };
+
+            } catch(e) {}
+
+        }
+
+
+ 
+
+        window.onload = function() {
+
+            loadSettings();
+
+            checkMicPermissionStatus();
+
+            initVoiceEngine();
+
+            updateSignal('yellow', '복실이가 조는 중... 복실이를 한번 터치해 주세요!');
+
+        };
+
+
+ 
+
+        function loadSettings() {
+
+            try {
+
+                const saved = localStorage.getItem("boksiri_config_v4");
+
+                if (saved) { const parsed = JSON.parse(saved); configData = { ...configData, ...parsed }; }
+
+            } catch(e) {}
+
+            buildSystemPrompt();
+
+            renderSettingsContacts();
+
+        }
+
+
+ 
+
+        function buildSystemPrompt() {
+
+            const title = configData.userTitle;
+
+            SYSTEM_PROMPT = `너의 이름은 '복실이'이고, 혼자 사시는 어르신을 돌보는 인공지능 강아지 비서야. 대화 상대방의 호칭은 '${title}'이야. 호칭 뒤에 '님'을 붙이지 말고, 대화 중에 매번 부르지 말고 가끔씩만 자연스럽게 불러줘. 친절하고 공손한 존댓말로 대답해줘. 질문에 성의있게 답하되, 어르신이 듣기 편하게 3~5문장 정도로 답해줘. 날씨를 물으면 반드시 get_weather 도구를 사용해서 실제 날씨 데이터로 답해줘. 뉴스나 정보를 물으면 구체적으로 알려줘. 이전 대화를 기억하고 이어서 대화해. 가슴이 아프거나 답답하다고 하면 즉시 119를 부르라고 강하게 권해줘.`;
+
+        }
+
+
+ 
+
+        function saveSettings() {
+
+            configData.userTitle = document.getElementById('user-title').value;
+
+            configData.voiceGender = document.getElementById('voice-gender').value;
+
+            try { localStorage.setItem("boksiri_config_v4", JSON.stringify(configData)); } catch(e) {}
+
+            buildSystemPrompt();
+
+            conversationHistory = [];
+
+            closeSettings();
+
+            alert("설정이 저장되었습니다!");
+
+            resetToIdleState();
+
+        }
+
+
+ 
+
+        function openSettings() {
+
+            document.getElementById('user-title').value = configData.userTitle || "할아버지";
+
+            document.getElementById('voice-gender').value = configData.voiceGender || "granddaughter";
+
+            renderSettingsContacts();
+
+            document.getElementById('settingsModal').style.display = 'flex';
+
+        }
+
+        function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
+
+
+ 
+
+        function renderSettingsContacts() {
+
+            const container = document.getElementById('contact-list-container');
+
+            container.innerHTML = '';
+
+            configData.contacts.forEach((c, index) => {
+
+                const div = document.createElement('div');
+
+                div.className = 'd-flex justify-content-between align-items-center mb-1 bg-light p-1 rounded';
+
+                div.innerHTML = `<span class="small fw-bold">👤 ${c.name} : ${c.phone || "미등록"}</span><button class="btn btn-sm btn-danger py-0 px-1" style="font-size:0.65rem;" onclick="deleteContact(${index})">삭제</button>`;
+
+                container.appendChild(div);
+
+            });
+
+        }
+
+
+ 
+
+        function addNewContact() {
+
+            const name = document.getElementById('new-contact-name').value.trim();
+
+            const phone = document.getElementById('new-contact-phone').value.trim();
+
+            if (!name || !phone) { alert("이름과 번호를 입력해 주세요."); return; }
+
+            configData.contacts.push({ name, phone });
+
+            document.getElementById('new-contact-name').value = '';
+
+            document.getElementById('new-contact-phone').value = '';
+
+            renderSettingsContacts();
+
+        }
+
+
+ 
+
+        function deleteContact(index) { configData.contacts.splice(index, 1); renderSettingsContacts(); }
+
+
+ 
+
+        function speak(text) {
+
+            updateSignal('yellow', '복실이가 대답하는 중...');
+
+            window.currentAiText = text;
+
+            if (inactivityTimer) clearTimeout(inactivityTimer);
+
+            if (speakTimer) clearTimeout(speakTimer);
+
+            const estimatedSpeakTime = (text.length * 150) + 2000;
+
+            speakTimer = setTimeout(() => { restartMicSafely(); }, estimatedSpeakTime);
+
+            window.speechSynthesis.cancel();
+
+            let safeText = text.replace(/어르신/g, configData.userTitle);
+
+            const utterance = new SpeechSynthesisUtterance(safeText);
+
+            utterance.lang = "ko-KR";
+
+            const voices = window.speechSynthesis.getVoices();
+
+            let selectedVoice = null;
+
+            if (configData.voiceGender === 'granddaughter') {
+
+                selectedVoice = voices.find(v => v.lang === 'ko-KR' && (v.name.includes('Google') || v.name.includes('Yuna')));
+
+                utterance.pitch = 1.25; utterance.rate = 0.95;
+
+            } else if (configData.voiceGender === 'grandson') {
+
+                selectedVoice = voices.find(v => v.lang === 'ko-KR' && (v.name.includes('Minjun') || v.name.includes('male')));
+
+                utterance.pitch = 1.05; utterance.rate = 0.90;
+
+            } else if (configData.voiceGender === 'woman30') {
+
+                selectedVoice = voices.find(v => v.lang === 'ko-KR' && (v.name.includes('Heami') || v.name.includes('Google')));
+
+                utterance.pitch = 1.00; utterance.rate = 0.95;
+
+            } else if (configData.voiceGender === 'man30') {
+
+                selectedVoice = voices.find(v => v.lang === 'ko-KR' && (v.name.includes('Minjun') || v.name.includes('male')));
+
+                utterance.pitch = 0.85; utterance.rate = 0.92;
+
+            }
+
+            if (!selectedVoice) selectedVoice = voices.find(v => v.lang.startsWith('ko'));
+
+            if (selectedVoice) utterance.voice = selectedVoice;
+
+            utterance.onend = function() {
+
+                if (speakTimer) clearTimeout(speakTimer);
+
+                restartMicSafely();
+
+                if (isActiveState && !isConfirmingCall && !isConfirmingTaxi) startInactivityTimer();
+
+            };
+
+            utterance.onerror = function() {
+
+                if (speakTimer) clearTimeout(speakTimer);
+
+                restartMicSafely();
+
+                if (isActiveState && !isConfirmingCall && !isConfirmingTaxi) startInactivityTimer();
+
+            };
+
+            setTimeout(() => { window.speechSynthesis.speak(utterance); }, 50);
+
+        }
+
+
+ 
+
+        function startInactivityTimer() {
+
+            if (inactivityTimer) clearTimeout(inactivityTimer);
+
+            inactivityTimer = setTimeout(() => {
+
+                if (isActiveState && !isConfirmingCall && !isConfirmingTaxi && !window.speechSynthesis.speaking) {
+
+                    resetToIdleState();
+
+                    speak("복실이 잠시 쉬고 있을게요. 필요하면 다시 불러주세요!");
+
+                }
+
+            }, 20000);
+
+        }
+
+
+ 
+
+        function restartMicSafely() {
+
+            if (/KAKAOTALK/i.test(navigator.userAgent)) return;
+
+            if (recognition && !isRecognitionRunning) { try { recognition.start(); } catch(e) {} }
+
+        }
+
+
+ 
+
+        if (window.speechSynthesis.onvoiceschanged !== undefined) {
+
+            window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
+
+        }
+
+
+ 
+
+        function updateSignal(color, text) {
+
+            const dot = document.getElementById('signal-dot');
+
+            const txt = document.getElementById('signal-text');
+
+            const bar = document.getElementById('signal-bar');
+
+            dot.className = "signal-dot"; txt.className = "";
+
+            if (color === 'red') { dot.classList.add('sig-red'); txt.classList.add('text-danger'); bar.style.backgroundColor = '#fce8e6'; }
+
+            else if (color === 'yellow') { dot.classList.add('sig-yellow'); txt.classList.add('text-warning'); bar.style.backgroundColor = '#fef9e7'; }
+
+            else if (color === 'green') { dot.classList.add('sig-green'); txt.classList.add('text-success'); bar.style.backgroundColor = '#eafaf1'; }
+
+            txt.innerText = text;
+
+        }
+
+
+ 
+
+        function initVoiceEngine() {
+
+            if (!SpeechRecognition) { updateSignal('red', '음성 인식 미지원 (크롬 권장)'); return; }
+
+            recognition = new SpeechRecognition();
+
+            recognition.continuous = true;
+
+            recognition.interimResults = false;
+
+            recognition.lang = "ko-KR";
+
+            recognition.maxAlternatives = 3;
+
+
+ 
+
+            recognition.onstart = function() {
+
+                isRecognitionRunning = true;
+
+                document.getElementById('mic-permission-banner').style.display = 'none';
+
+                if (isActiveState) updateSignal('green', '복실이가 듣고 있어요! 말씀하세요.');
+
+                else updateSignal('yellow', '복실이가 조는 중... 복실아 라고 불러주세요!');
+
+            };
+
+            recognition.onspeechstart = function() { if (inactivityTimer) clearTimeout(inactivityTimer); };
+
+            recognition.onerror = function(event) {
+
+                isRecognitionRunning = false;
+
+                if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+
+                    document.getElementById('mic-permission-banner').style.display = 'block';
+
+                    updateSignal('red', '마이크가 차단되어 있어요!');
+
+                } else if (event.error === 'network') { updateSignal('red', '인터넷 연결을 확인해 주세요.'); }
+
+            };
+
+            recognition.onresult = function(event) {
+
+                const speechToText = event.results[event.results.length - 1][0].transcript.trim();
+
+                if (speechToText.includes("꺼라") || speechToText.includes("그만") || speechToText.includes("시끄럽") || speechToText.includes("조용") || speechToText.includes("멈춰")) { closeTheater(); return; }
+
+                if (isConfirmingCall) { handleCallConfirmation(speechToText); return; }
+
+                if (isConfirmingTaxi) { handleTaxiConfirmation(speechToText); return; }
+
+                if (window.speechSynthesis.speaking) {
+
+                    const aiSentence = window.currentAiText || "";
+
+                    const isSelfEcho = aiSentence.includes(speechToText) || speechToText.split(" ").every(word => aiSentence.includes(word));
+
+                    if (isSelfEcho) { return; }
+
+                    else { window.speechSynthesis.cancel(); if (speakTimer) clearTimeout(speakTimer); }
+
+                }
+
+                if (!isActiveState) {
+
+                    if (speechToText.includes("복실") || speechToText.includes("옥실") || speechToText.includes("목실") || speechToText.includes("복순")) triggerActiveState();
+
+                } else { handleCommand(speechToText); }
+
+            };
+
+            recognition.onend = function() {
+
+                isRecognitionRunning = false;
+
+                setTimeout(() => { if (!isRecognitionRunning && !window.speechSynthesis.speaking) restartMicSafely(); }, 300);
+
+            };
+
+            restartMicSafely();
+
+        }
+
+
+ 
+
+        window.toggleBoksiri = function() {
+
+            if (/KAKAOTALK/i.test(navigator.userAgent)) {
+
+                alert("카카오톡에서는 마이크가 안 됩니다! 다른 브라우저로 열어주세요!");
+
+                return;
+
+            }
+
+            if (!isRecognitionRunning) {
+
+                requestMicPermission().then(() => {
+
+                    if (!isActiveState) triggerActiveState();
+
+                    else { resetToIdleState(); speak("복실이 이만 쉴게요. 필요하면 불러주세요!"); }
+
+                }).catch(() => {});
+
+                return;
+
+            }
+
+            if (!isActiveState) triggerActiveState();
+
+            else { resetToIdleState(); speak("복실이 이만 쉴게요. 필요하면 불러주세요!"); }
+
+        };
+
+
+ 
+
+        function triggerActiveState() {
+
+            isActiveState = true;
+
+            requestWakeLock();
+
+            document.getElementById('status-display').innerText = "👂 네, 말씀하세요~";
+
+            document.getElementById('status-display').className = "status-text text-danger fw-bold";
+
+            const btn = document.getElementById('boksiri-main-btn');
+
+            btn.classList.add('active');
+
+            document.getElementById('btn-text').innerText = "대화 끝내기";
+
+            document.getElementById('btn-text').className = "fw-bold mt-2 text-white";
+
+            updateSignal('green', '복실이가 듣고 있어요! 말씀하세요.');
+
+            speak("네, 말씀하세요.");
+
+        }
+
+
+ 
+
+        function resetToIdleState() {
+
+            isActiveState = false; isConfirmingCall = false; isConfirmingTaxi = false;
+
+            releaseWakeLock();
+
+            if (inactivityTimer) clearTimeout(inactivityTimer);
+
+            const btn = document.getElementById('boksiri-main-btn');
+
+            btn.classList.remove('active');
+
+            document.getElementById('btn-text').innerText = "복실이 부르기";
+
+            document.getElementById('btn-text').className = "fw-bold mt-2 text-dark";
+
+            document.getElementById('status-display').innerText = '복실아 라고 불러주거나 아래 복실이를 눌러주세요';
+
+            document.getElementById('status-display').className = "status-text text-success";
+
+            updateSignal('yellow', '복실이가 조는 중... 복실이를 한번 터치해 주세요!');
+
+            window.speechSynthesis.cancel();
+
+            setTimeout(restartMicSafely, 300);
+
+        }
+
+
+ 
+
+        function playVideoAutomatically(searchQuery) {
+
+            const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchQuery)}`;
+
+            window.open(url, '_blank');
+
+            resetToIdleState();
+
+        }
+
+
+ 
+
+        function closeTheater() {
+
+            document.getElementById('youtube-iframe').src = "";
+
+            document.getElementById('theater-view').style.setProperty('display', 'none', 'important');
+
+            speak("노래를 껐어요. 다른 말씀 하셔도 돼요.");
+
+            resetToIdleState();
+
+        }
+
+
+ 
+
+        function calculateTaxiDetails(startName, destName) {
+
+            taxiStart = startName; taxiDest = destName;
+
+            let hashDistance = ((startName.length + destName.length) % 15) + 3;
+
+            estimatedTime = Math.round(hashDistance * 2.3 + 4);
+
+            estimatedFare = Math.round((4800 + Math.round(hashDistance * 1100)) / 100) * 100;
+
+            isConfirmingTaxi = true;
+
+            document.getElementById('status-display').innerText = `🚕 요금 약 ${estimatedFare.toLocaleString()}원 / ${estimatedTime}분`;
+
+            document.getElementById('status-display').className = "status-text text-danger fw-bold";
+
+            speak(`${startName}에서 ${destName}까지 약 ${estimatedFare.toLocaleString()}원, ${estimatedTime}분 걸려요. 택시 부를까요? 맞으면 '어 그래', 아니면 '하지마'라고 하세요.`);
+
+        }
+
+
+ 
+
+        function handleTaxiConfirmation(speechText) {
+
+            if (speechText.includes("응") || speechText.includes("어") || speechText.includes("그래") || speechText.includes("호출") || speechText.includes("네") || speechText.includes("맞아") || speechText.includes("불러")) {
+
+                speak("카카오 택시를 켤게요. 호출 단추만 누르세요!");
+
+                setTimeout(() => {
+
+                    window.location.href = `kakaot://taxi?dest_name=${encodeURIComponent(taxiDest)}`;
+
+                    setTimeout(() => { if (!document.hidden) window.location.href = "https://t.kakao.com"; }, 2000);
+
+                    resetToIdleState();
+
+                }, 3500);
+
+            } else if (speechText.includes("하지") || speechText.includes("안해") || speechText.includes("취소") || speechText.includes("아니")) {
+
+                speak("택시 호출을 취소했어요."); resetToIdleState();
+
+            } else { speak("택시를 부를까요? '어 그래' 또는 '하지마'라고 하세요."); }
+
+        }
+
+
+ 
+
+        async function askAI(userMessage) {
+
+            let lat = null, lon = null;
+
+            try {
+
+                const pos = await new Promise((resolve, reject) => {
+
+                    navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000, maximumAge: 600000 });
+
+                });
+
+                lat = pos.coords.latitude; lon = pos.coords.longitude;
+
+            } catch(e) {}
+
+
+ 
+
+            const response = await fetch(RELAY_URL, {
+
+                method: "POST",
+
+                headers: { "Content-Type": "application/json" },
+
+                body: JSON.stringify({ message: userMessage, system: SYSTEM_PROMPT, history: conversationHistory, lat: lat, lon: lon })
+
+            });
+
+            if (!response.ok) throw new Error("서버 연결 실패");
+
+            const data = await response.json();
+
+            const answer = data.answer || "";
+
+            conversationHistory.push({ role: "user", parts: [{ text: userMessage }] });
+
+            conversationHistory.push({ role: "model", parts: [{ text: answer }] });
+
+            if (conversationHistory.length > 20) conversationHistory = conversationHistory.slice(-20);
+
+            return answer;
+
+        }
+
+
+ 
+
+        async function runLLMOrFallback(userMessage) {
+
+            document.getElementById('status-display').innerText = "🤔 생각 중이에요...";
+
+            try { return await askAI(userMessage); } catch(err) { return runLocalRuleFallback(userMessage); }
+
+        }
+
+
+ 
+
+        function runLocalRuleFallback(command) {
+
+            if (command.includes("외롭") || command.includes("쓸쓸") || command.includes("혼자")) return "외로워하지 마세요. 복실이가 늘 곁에 있어요!";
+
+            else if (command.includes("머리") || command.includes("두통")) return "머리가 아프시군요. 따뜻한 물 드시고 좀 쉬어보세요.";
+
+            else if (command.includes("가슴") || command.includes("답답") || command.includes("숨")) return "가슴이 답답하신 건 위험해요! 즉시 119를 부르세요!";
+
+            else if (command.includes("배가") || command.includes("복통")) return "배를 따뜻하게 하고 살살 문질러 보세요.";
+
+            else return "인터넷이 잠깐 느린 것 같아요. 다시 한번 말씀해 주세요.";
+
+        }
+
+
+ 
+
+        function triggerCallConfirmation(phoneName, phoneNumber) {
+
+            isConfirmingCall = true; pendingPhoneNumber = phoneNumber; pendingPhoneName = phoneName;
+
+            document.getElementById('status-display').innerText = `📞 ${phoneName}에게 전화할까요?`;
+
+            document.getElementById('status-display').className = "status-text text-danger fw-bold";
+
+            speak(`${phoneName}에게 전화 걸까요? 맞으면 '어 그래', 아니면 '하지마'라고 하세요.`);
+
+        }
+
+
+ 
+
+        function handleCallConfirmation(speechText) {
+
+            if (speechText.includes("응") || speechText.includes("어") || speechText.includes("그래") || speechText.includes("전화해") || speechText.includes("네") || speechText.includes("맞아")) {
+
+                speak(`${pendingPhoneName}에게 전화를 연결할게요.`);
+
+                setTimeout(() => { window.location.href = `tel:${pendingPhoneNumber}`; resetToIdleState(); }, 2500);
+
+            } else if (speechText.includes("하지") || speechText.includes("안해") || speechText.includes("취소") || speechText.includes("아니")) {
+
+                speak("전화를 취소했어요."); resetToIdleState();
+
+            } else { speak("전화 걸까요? '어 그래' 또는 '하지마'라고 하세요."); }
+
+        }
+
+
+ 
+
+        async function handleCommand(command) {
+
+            if (command.includes("꺼") || command.includes("정지") || command.includes("중단") || command.includes("그만") || command.includes("멈춰")) { closeTheater(); return; }
+
+            if (command.includes("경찰") || command.includes("112")) { triggerCallConfirmation("경찰서", "112"); return; }
+
+            if (command.includes("소방서") || command.includes("119") || command.includes("불났") || command.includes("구급차")) { triggerCallConfirmation("소방서", "119"); return; }
+
+
+ 
+
+            if (command.includes("택시") || command.includes("차 불러")) {
+
+                const routeMatch = command.match(/(.+)에서\s*(.+)까지/) || command.match(/(.+)부터\s*(.+)까지/);
+
+                if (routeMatch) calculateTaxiDetails(routeMatch[1].replace("복실아","").trim(), routeMatch[2].replace("택시","").replace("불러줘","").replace("불러","").trim());
+
+                else { speak("어디서 어디까지 가세요? '집에서 병원까지'처럼 말씀해 주세요."); }
+
+                return;
+
+            }
+
+            if (isActiveState && (command.includes("에서") && command.includes("까지"))) {
+
+                const routeMatch = command.match(/(.+)에서\s*(.+)까지/);
+
+                if (routeMatch) { calculateTaxiDetails(routeMatch[1].trim(), routeMatch[2].trim()); return; }
+
+            }
+
+
+ 
+
+            if (command.includes("노래") || command.includes("음악") || command.includes("트로트") || command.includes("틀어") || command.includes("들려") || command.includes("불러줘")) {
+
+                let searchWord = command.replace("복실아","").replace("노래","").replace("음악","").replace("틀어줘","").replace("틀어","").replace("들려줘","").replace("들려","").replace("재생","").replace("불러줘","").trim();
+
+                if (!searchWord) searchWord = "트로트 메들리";
+
+                speak(`${searchWord} 틀어드릴게요!`);
+
+                setTimeout(() => { playVideoAutomatically(searchWord); }, 2500);
+
+                return;
+
+            }
+
+
+ 
+
+            let foundContact = null;
+
+            for (let c of configData.contacts) { if (c.phone && command.includes(c.name)) { foundContact = c; break; } }
+
+            if (foundContact) { triggerCallConfirmation(foundContact.name, foundContact.phone); return; }
+
+
+ 
+
+            if (command.includes("시간") || command.includes("몇 시") || command.includes("몇시")) {
+
+                const now = new Date();
+
+                const h = now.getHours(); const m = now.getMinutes();
+
+                const ampm = h >= 12 ? '오후' : '오전';
+
+                const dh = h % 12 ? h % 12 : 12;
+
+                speak(`지금은 ${ampm} ${dh}시 ${m}분이에요. 약 챙겨 드세요!`);
+
+                return;
+
+            }
+
+
+ 
+
+            try {
+
+                const aiResponse = await runLLMOrFallback(command);
+
+                document.getElementById('status-display').innerText = "👂 듣고 있어요...";
+
+                speak(aiResponse);
+
+            } catch(e) { speak("잘 못 들었어요. 다시 말씀해 주세요."); resetToIdleState(); }
+
+        }
+
+    </script>
+
+</body>
+
+</html>
+
+HTMLEOF
+
+echo "done"
+
+
+
+
+
+  
+
