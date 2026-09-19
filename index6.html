@@ -1224,47 +1224,50 @@ cat > /mnt/user-data/outputs/boksiri.html << 'HTMLEOF'
 
             // 날씨: 지역명 있으면 그 지역, 없으면 내 위치
 
-            if (command.includes("날씨") || command.includes("기온") || command.includes("더워") || command.includes("추워")) {
-
-                function extractCity(command) {
-
-                    let cleaned = command
-                        .replace(/복실아/g, "")
-                        .replace(/복실이/g, "")
-                        .replace(/오늘/g, "")
-                        .replace(/내일/g, "")
-                        .replace(/지금/g, "")
-                        .replace(/현재/g, "")
-                        .replace(/날씨/g, "")
-                        .replace(/기온/g, "")
-                        .replace(/어때/g, "")
-                        .replace(/어떄/g, "")
-                        .replace(/알려줘/g, "")
-                        .replace(/알려 줘/g, "")
-                        .replace(/알려/g, "")
-                        .replace(/좀/g, "")
-                        .trim();
-                
-                    if (!cleaned) {
-                        return null;
-                    }
-                
-                    return cleaned;
+            if (
+                command.includes("날씨") ||
+                command.includes("기온") ||
+                command.includes("더워") ||
+                command.includes("추워")
+            ) {
+            
+                const city = extractCity(command);
+            
+                if (city && city.length >= 2) {
+                    fetchWeatherByCity(city);
+                } else {
+                    fetchLocationAndWeather();
                 }
-
-
-            if (command.includes("택시") || command.includes("차 불러")) {
-
-                const routeMatch = command.match(/(.+)에서\s*(.+)까지/) || command.match(/(.+)부터\s*(.+)까지/);
-
-                if (routeMatch) calculateTaxiDetails(routeMatch[1].replace("복실아","").trim(), routeMatch[2].replace("택시","").replace("불러줘","").replace("불러","").trim());
-
-                else { speak("어디서 어디까지 가세요? '집에서 병원까지'처럼 말씀해 주세요."); }
-
+            
                 return;
-
+            }
+            
+            
+            // 택시
+            
+            if (command.includes("택시") || command.includes("차 불러")) {
+            
+                const routeMatch =
+                    command.match(/(.+)에서\s*(.+)까지/) ||
+                    command.match(/(.+)부터\s*(.+)까지/);
+            
+                if (routeMatch) {
+                    calculateTaxiDetails(
+                        routeMatch[1].replace("복실아", "").trim(),
+                        routeMatch[2]
+                            .replace("택시", "")
+                            .replace("불러줘", "")
+                            .replace("불러", "")
+                            .trim()
+                    );
+                } else {
+                    speak("어디서 어디까지 가세요? '집에서 병원까지'처럼 말씀해 주세요.");
+                }
+            
+                return;
             }
 
+                
             if (isActiveState && (command.includes("에서") && command.includes("까지"))) {
 
                 const routeMatch = command.match(/(.+)에서\s*(.+)까지/);
