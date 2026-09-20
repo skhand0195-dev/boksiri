@@ -553,11 +553,8 @@ cat > /mnt/user-data/outputs/boksiri.html << 'HTMLEOF'
  
 
         function buildSystemPrompt() {
-
             const title = configData.userTitle;
-
-            SYSTEM_PROMPT = `너의 이름은 '복실이'이고, 혼자 사시는 어르신을 돌보는 인공지능 강아지 비서야. 대화 상대방의 호칭은 '${title}'이야. 호칭을 부를 때는 반드시 '${title}'라고만 하고 뒤에 '님' 같은 글자를 붙이지 마. 그리고 호칭은 대화 중에 매번 부르지 말고, 정말 필요할 때 가끔씩만 자연스럽게 불러줘. 매 문장마다 호칭을 반복하면 안 돼. 친절하고 공손한 존댓말로, 짧고 자연스럽게 대답해줘. 이전 대화를 기억하고 이어서 대화해. 가슴이 아프거나 답답하다고 하면 즉시 119를 부르라고 강하게 권해줘. 대답은 한두 문장으로 짧게 해줘.`;
-
+            SYSTEM_PROMPT = `너의 이름은 '복실이'이고, 혼자 사시는 어르신을 돌보는 인공지능 강아지 비서야. 대화 상대방의 호칭은 '${title}'이야. 호칭을 부를 때는 반드시 '${title}'라고만 하고 뒤에 '님' 같은 글자를 붙이지 마. 호칭은 대화 중에 매번 부르지 말고, 정말 필요할 때만 자연스럽게 불러줘. 친절하고 공손한 존댓말로 짧고 자연스럽게 대답해줘. 사용자가 질문하거나 요청한 내용에만 답하고, 질문하지 않은 내용은 임의로 덧붙이지 마. 약, 음식, 병원, 운동, 건강관리 등의 조언이나 권유도 사용자가 묻지 않았다면 먼저 꺼내지 마. 사용자가 질문하지 않았는데 추가 질문을 하거나 대화를 억지로 이어가려고 하지 마. 이전 대화의 내용은 필요할 때만 참고해. 가슴이 아프거나 답답하다고 하면 즉시 119를 부르라고 강하게 권해줘. 대답은 한두 문장으로 짧게 해줘.`;
         }
 
 
@@ -1374,6 +1371,22 @@ cat > /mnt/user-data/outputs/boksiri.html << 'HTMLEOF'
                 return;
             }
             
+            // 뉴스
+            if (
+                command.includes("뉴스") ||
+                command.includes("주요 뉴스") ||
+                command.includes("오늘 뉴스") ||
+                command.includes("한국 뉴스")
+            ) {
+                document.getElementById('status-display').innerText =
+                    "📰 최신 뉴스를 가져오는 중이에요...";
+        
+                const newsResponse = await runLLMOrFallback(command);
+        
+                speak(newsResponse);
+        
+                return;
+            }
             
             // 택시
             
@@ -1439,6 +1452,7 @@ cat > /mnt/user-data/outputs/boksiri.html << 'HTMLEOF'
 
  
 
+            // 날짜 / 시간
             if (
                 command.includes("시간") ||
                 command.includes("몇 시") ||
@@ -1446,34 +1460,21 @@ cat > /mnt/user-data/outputs/boksiri.html << 'HTMLEOF'
                 command.includes("몇 월") ||
                 command.includes("몇월") ||
                 command.includes("오늘 날짜") ||
-                command.includes("오늘이 며칠")
+                command.includes("오늘이 며칠") ||
+                command.includes("오늘 며칠") ||
+                command.includes("내일") ||
+                command.includes("모레") ||
+                command.includes("어제")
             ) {
             
-                const now = new Date();
-            
-                const koreaDate = new Intl.DateTimeFormat('ko-KR', {
-                    timeZone: 'Asia/Seoul',
-                    year: 'numeric',
-                    month: 'numeric',
-                    day: 'numeric',
-                    weekday: 'long'
-                }).formatToParts(now);
-            
-                const getPart = type => koreaDate.find(p => p.type === type)?.value;
-            
-                const year = getPart('year');
-                const month = getPart('month');
-                const day = getPart('day');
-                const weekday = getPart('weekday');
-            
+                // 시간 질문
                 if (
-                    command.includes("몇 월") ||
-                    command.includes("몇월") ||
-                    command.includes("오늘 날짜") ||
-                    command.includes("오늘이 며칠")
+                    command.includes("시간") ||
+                    command.includes("몇 시") ||
+                    command.includes("몇시")
                 ) {
-                    speak(`오늘은 ${year}년 ${month}월 ${day}일 ${weekday}이에요.`);
-                } else {
+                    const now = new Date();
+            
                     const h = Number(new Intl.DateTimeFormat('ko-KR', {
                         timeZone: 'Asia/Seoul',
                         hour: 'numeric',
@@ -1489,6 +1490,17 @@ cat > /mnt/user-data/outputs/boksiri.html << 'HTMLEOF'
                     const dh = h % 12 || 12;
             
                     speak(`지금은 ${ampm} ${dh}시 ${m}분이에요.`);
+                    return;
+                }
+            
+                // 날짜 질문은 V2 서버에서
+                // 양력 + 음력 + 절기 + 복날 + 명절을 처리
+                try {
+                    const dateResponse = await runLLMOrFallback(command);
+            
+                    speak(dateResponse);
+                } catch (e) {
+                    speak("날짜를 확인하지 못했어요.");
                 }
             
                 return;
