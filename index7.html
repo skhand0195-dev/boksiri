@@ -363,7 +363,7 @@ cat > /mnt/user-data/outputs/boksiri.html << 'HTMLEOF'
 
     <script>
 
-        const RELAY_URL = "https://boksiri.skhand0195.workers.dev";
+        const RELAY_URL = "https://boksiri-v2.skhand0195.workers.dev";
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -1439,22 +1439,60 @@ cat > /mnt/user-data/outputs/boksiri.html << 'HTMLEOF'
 
  
 
-            if (command.includes("시간") || command.includes("몇 시") || command.includes("몇시")) {
-
+            if (
+                command.includes("시간") ||
+                command.includes("몇 시") ||
+                command.includes("몇시") ||
+                command.includes("몇 월") ||
+                command.includes("몇월") ||
+                command.includes("오늘 날짜") ||
+                command.includes("오늘이 며칠")
+            ) {
+            
                 const now = new Date();
-
-                const h = now.getHours(); const m = now.getMinutes();
-
-                const ampm = h >= 12 ? '오후' : '오전';
-
-                const dh = h % 12 ? h % 12 : 12;
-
-                speak(`지금은 ${ampm} ${dh}시 ${m}분이에요. 약 챙겨 드세요!`);
-
+            
+                const koreaDate = new Intl.DateTimeFormat('ko-KR', {
+                    timeZone: 'Asia/Seoul',
+                    year: 'numeric',
+                    month: 'numeric',
+                    day: 'numeric',
+                    weekday: 'long'
+                }).formatToParts(now);
+            
+                const getPart = type => koreaDate.find(p => p.type === type)?.value;
+            
+                const year = getPart('year');
+                const month = getPart('month');
+                const day = getPart('day');
+                const weekday = getPart('weekday');
+            
+                if (
+                    command.includes("몇 월") ||
+                    command.includes("몇월") ||
+                    command.includes("오늘 날짜") ||
+                    command.includes("오늘이 며칠")
+                ) {
+                    speak(`오늘은 ${year}년 ${month}월 ${day}일 ${weekday}이에요.`);
+                } else {
+                    const h = Number(new Intl.DateTimeFormat('ko-KR', {
+                        timeZone: 'Asia/Seoul',
+                        hour: 'numeric',
+                        hour12: false
+                    }).format(now));
+            
+                    const m = Number(new Intl.DateTimeFormat('ko-KR', {
+                        timeZone: 'Asia/Seoul',
+                        minute: 'numeric'
+                    }).format(now));
+            
+                    const ampm = h >= 12 ? '오후' : '오전';
+                    const dh = h % 12 || 12;
+            
+                    speak(`지금은 ${ampm} ${dh}시 ${m}분이에요.`);
+                }
+            
                 return;
-
             }
-
 
  
 
