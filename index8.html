@@ -1453,59 +1453,7 @@ cat > /mnt/user-data/outputs/boksiri.html << 'HTMLEOF'
 
  
 
-            // 날짜 / 시간
-            if (
-                command.includes("시간") ||
-                command.includes("몇 시") ||
-                command.includes("몇시") ||
-                command.includes("몇 월") ||
-                command.includes("몇월") ||
-                command.includes("오늘 날짜") ||
-                command.includes("오늘이 며칠") ||
-                command.includes("오늘 며칠") ||
-                command.includes("내일") ||
-                command.includes("모레") ||
-                command.includes("어제")
-            ) {
             
-                // 시간 질문
-                if (
-                    command.includes("시간") ||
-                    command.includes("몇 시") ||
-                    command.includes("몇시")
-                ) {
-                    const now = new Date();
-            
-                    const h = Number(new Intl.DateTimeFormat('ko-KR', {
-                        timeZone: 'Asia/Seoul',
-                        hour: 'numeric',
-                        hour12: false
-                    }).format(now));
-            
-                    const m = Number(new Intl.DateTimeFormat('ko-KR', {
-                        timeZone: 'Asia/Seoul',
-                        minute: 'numeric'
-                    }).format(now));
-            
-                    const ampm = h >= 12 ? '오후' : '오전';
-                    const dh = h % 12 || 12;
-            
-                    speak(`지금은 ${ampm} ${dh}시 ${m}분이에요.`);
-                    return;
-                }
-            
-                // 날짜 질문은 V2 서버에서
-                // 양력 + 음력 + 절기 + 복날 + 명절을 처리
-                try {
-                    const dateResponse = await runLLMOrFallback(command);
-            
-                    speak(dateResponse);
-                } catch (e) {
-                    speak("날짜를 확인하지 못했어요.");
-                }
-            
-                return;
-            }
 
  
 
